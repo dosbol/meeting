@@ -11,3 +11,13 @@
  ::set-active-panel
  (fn [db [_ active-panel]]
    (assoc db :active-panel active-panel)))
+
+(re-frame/reg-event-db
+ ::set-active-meeting-id
+ (fn [db [_ id]]
+   (assoc db :active-meeting-id id)))
+
+(re-frame/reg-event-db
+ ::delete-meeting!
+ (fn [db [_ id]]      ;;todo: filter meetings
+   db))

@@ -8,15 +8,17 @@
 
 (defn home-panel []
   (let [name (re-frame/subscribe [::subs/name])]
-    [:div (str "Hello from " @name ". This is the Home Page.")
-     [:div [:a {:href "#/about"} "go to About Page"]]]))
+    [:div (str "Hello. This is the Home Page.")
+     [:div [:a {:href "#/meetings"} "test #/meetings"]]
+     [:div [:a {:href "#/meetings/2"} "test #/meetings/2"]]]))
 
 
-;; about
+;; meeting
 
-(defn about-panel []
-  [:div "This is the About Page."
-   [:div [:a {:href "#/"} "go to Home Page"]]])
+(defn meeting-panel []
+  (let [id (re-frame/subscribe [::subs/id])]
+    [:div "This is the Meeting Page."
+    [:div [:a {:href "#/"} "go to Home Page"]]]))
 
 
 ;; main
@@ -24,7 +26,7 @@
 (defn- panels [panel-name]
   (case panel-name
     :home-panel [home-panel]
-    :about-panel [about-panel]
+    :meeting-panel [meeting-panel]
     [:div]))
 
 (defn show-panel [panel-name]

@@ -23,9 +23,14 @@
   (defroute "/" []
     (re-frame/dispatch [::events/set-active-panel :home-panel]))
 
-  (defroute "/about" []
-    (re-frame/dispatch [::events/set-active-panel :about-panel]))
+  (defroute "/meetings" []
+    (re-frame/dispatch [::events/set-active-panel :meeting-panel]))
 
+
+  (defroute "/meetings/:id" [id]
+    (do
+      (re-frame/dispatch [::events/set-active-panel :meeting-panel])
+      (re-frame/dispatch [::events/set-active-meeting-id id])))
 
   ;; --------------------
   (hook-browser-navigation!))
