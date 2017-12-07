@@ -7,18 +7,16 @@
 ;; home
 
 (defn home-panel []
-  (let [name (re-frame/subscribe [::subs/name])]
     [:div (str "Hello. This is the Home Page.")
      [:div [:a {:href "#/meetings"} "test #/meetings"]]
-     [:div [:a {:href "#/meetings/2"} "test #/meetings/2"]]]))
+     [:div [:a {:href "#/meetings/2"} "test #/meetings/2"]]])
 
 
 ;; meeting
 
 (defn meeting-panel []
-  (let [id (re-frame/subscribe [::subs/id])]
     [:div "This is the Meeting Page."
-    [:div [:a {:href "#/"} "go to Home Page"]]]))
+    [:div [:a {:href "#/"} "go to Home Page"]]])
 
 
 ;; main
@@ -34,4 +32,7 @@
 
 (defn main-panel []
   (let [active-panel (re-frame/subscribe [::subs/active-panel])]
-    [show-panel @active-panel]))
+    [:div
+      [show-panel @active-panel]
+      [:h4 "Database"]
+        [:pre (with-out-str (cljs.pprint/pprint @(re-frame/subscribe [::subs/db])))]]))

@@ -18,6 +18,11 @@
    (assoc db :active-meeting-id id)))
 
 (re-frame/reg-event-db
+ ::unset-active-meeting-id
+ (fn [db [_ _]]
+   (dissoc db :active-meeting-id)))
+
+(re-frame/reg-event-db
  ::delete-meeting!
  (fn [db [_ id]]      ;;todo: filter meetings
    db))

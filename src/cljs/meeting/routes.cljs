@@ -24,7 +24,9 @@
     (re-frame/dispatch [::events/set-active-panel :home-panel]))
 
   (defroute "/meetings" []
-    (re-frame/dispatch [::events/set-active-panel :meeting-panel]))
+    (do
+      (re-frame/dispatch [::events/set-active-panel :meeting-panel])
+      (re-frame/dispatch [::events/unset-active-meeting-id])))
 
 
   (defroute "/meetings/:id" [id]
