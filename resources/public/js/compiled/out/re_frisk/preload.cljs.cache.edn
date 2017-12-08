@@ -1,0 +1,1 @@
+{:rename-macros {}, :renames {}, :use-macros {}, :excludes #{}, :name re-frisk.preload, :imports nil, :requires {re-frisk.core re-frisk.core}, :cljs.spec/speced-vars [], :uses {enable-re-frisk! re-frisk.core}, :cljs.spec/registry-ref [], :require-macros nil, :doc nil}

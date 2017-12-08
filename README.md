@@ -4,6 +4,8 @@ A [re-frame](https://github.com/Day8/re-frame) test assignment.
 
 ## Development Mode
 
+[DEMO](https://dosbol.github.io/meeting)
+
 ### Run application:
 
 ```
