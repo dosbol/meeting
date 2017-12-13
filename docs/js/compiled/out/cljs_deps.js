@@ -39,6 +39,7 @@ goog.addDependency("../reagent/impl/template.js", ['reagent.impl.template'], ['r
 goog.addDependency("../cljsjs/react-dom/development/react-dom.inc.js", ['cljsjs.react.dom'], ['cljsjs.react']);
 goog.addDependency("../reagent/dom.js", ['reagent.dom'], ['reagent.impl.util', 'reagent.interop', 'reagent.ratom', 'cljs.core', 'reagent.impl.template', 'reagent.impl.batching', 'cljsjs.react.dom', 'reagent.debug']);
 goog.addDependency("../reagent/core.js", ['reagent.core'], ['reagent.impl.util', 'reagent.interop', 'reagent.ratom', 'cljs.core', 'reagent.impl.template', 'reagent.impl.batching', 'reagent.impl.component', 'reagent.debug', 'reagent.dom']);
+goog.addDependency("../meeting/db.js", ['meeting.db'], ['cljs.core', 'cljs.spec.alpha']);
 goog.addDependency("../re_frame/interop.js", ['re_frame.interop'], ['reagent.ratom', 'reagent.core', 'cljs.core', 'goog.async.nextTick']);
 goog.addDependency("../re_frame/loggers.js", ['re_frame.loggers'], ['cljs.core', 'clojure.set']);
 goog.addDependency("../re_frame/interceptor.js", ['re_frame.interceptor'], ['re_frame.interop', 'cljs.core', 'clojure.set', 're_frame.loggers']);
@@ -54,10 +55,9 @@ goog.addDependency("../clojure/data.js", ['clojure.data'], ['cljs.core', 'clojur
 goog.addDependency("../re_frame/std_interceptors.js", ['re_frame.std_interceptors'], ['re_frame.interceptor', 're_frame.registrar', 'cljs.core', 're_frame.utils', 're_frame.loggers', 're_frame.cofx', 'clojure.data', 're_frame.db']);
 goog.addDependency("../re_frame/subs.js", ['re_frame.subs'], ['re_frame.interop', 're_frame.trace', 're_frame.registrar', 'cljs.core', 're_frame.utils', 're_frame.loggers', 're_frame.db']);
 goog.addDependency("../re_frame/core.js", ['re_frame.core'], ['re_frame.interop', 're_frame.interceptor', 're_frame.events', 're_frame.fx', 're_frame.registrar', 'cljs.core', 're_frame.router', 'clojure.set', 're_frame.std_interceptors', 're_frame.loggers', 're_frame.subs', 're_frame.cofx', 're_frame.db']);
-goog.addDependency("../meeting/subs.js", ['meeting.subs'], ['cljs.core', 're_frame.core']);
-goog.addDependency("../meeting/views.js", ['meeting.views'], ['cljs.core', 'meeting.subs', 're_frame.core']);
-goog.addDependency("../meeting/db.js", ['meeting.db'], ['cljs.core', 'cljs.spec.alpha']);
 goog.addDependency("../meeting/events.js", ['meeting.events'], ['cljs.core', 'meeting.db', 're_frame.core']);
+goog.addDependency("../meeting/subs.js", ['meeting.subs'], ['cljs.core', 're_frame.core']);
+goog.addDependency("../meeting/views.js", ['meeting.views'], ['reagent.core', 'cljs.core', 'meeting.events', 'meeting.subs', 're_frame.core']);
 goog.addDependency("../secretary/core.js", ['secretary.core'], ['cljs.core', 'clojure.string', 'clojure.walk']);
 goog.addDependency("../meeting/routes.js", ['meeting.routes'], ['cljs.core', 'goog.history.EventType', 'goog.History', 'meeting.events', 'secretary.core', 'goog.events', 're_frame.core']);
 goog.addDependency("../meeting/config.js", ['meeting.config'], ['cljs.core']);

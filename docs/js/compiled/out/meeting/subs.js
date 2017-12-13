@@ -9,4 +9,4 @@ re_frame.core.reg_sub.call(null,new cljs.core.Keyword("meeting.subs","db","meeti
 return db;
 }));
 
-//# sourceMappingURL=subs.js.map?rel=1512673325704
+//# sourceMappingURL=subs.js.map?rel=1513190754431
