@@ -33,14 +33,14 @@
 
 (re-frame/reg-event-db
  ::delete-meeting!
- (fn [db [_ id]]      ;;todo: filter meetings
-   db))
+ (fn [db [_ id]]
+   (update-in db [:meetings] dissoc id)))
 
 (re-frame/reg-event-fx
  ::create-meeting!
  [(re-frame/inject-cofx :meeting-id)]
  (fn [cofx [_ new-meeting]]      
-   {:db (update-in (:db cofx) [:meetings] conj {(:meeting-id cofx) new-meeting})}))
+   {:db (update-in (:db cofx) [:meetings] conj {(:meeting-id cofx) (conj new-meeting {:id (:meeting-id cofx)})})}))
 
 (re-frame/reg-event-fx 
  ::set-hash!

@@ -5,6 +5,34 @@
             [meeting.events :as events]
             ))
 
+;; home page
+
+(defn meeting-item
+  []
+  (fn [{:keys [id title]}]
+    [:li 
+      [:div.view
+        [:label
+          title]
+        [:button
+          {:on-click #(re-frame/dispatch [::events/delete-meeting! id])} "delete"]]]))
+
+(defn meeting-list
+  []
+  (let [meetings @(re-frame/subscribe [::subs/meetings])]
+        [:ul#meeting-list
+          (for [meeting  meetings]
+            ^{:key (:id meeting)} [meeting-item meeting])]))
+
+(defn home-panel []
+    [:div (str "Hello. This is the Home Page.")
+     [:div [:a {:href "#/meetings"} "create meeting"]]
+     (when (seq @(re-frame/subscribe [::subs/meetings]))
+      [meeting-list])])
+
+
+;; meeting page
+
 (defn input-title
   [{:keys [props]}]
   (let [inner (reagent/atom "")]
@@ -12,15 +40,6 @@
                           {:type        "text"
                            :value       @inner
                            :on-change   #(reset! inner (-> % .-target .-value))})])))
-
-;; home
-
-(defn home-panel []
-    [:div (str "Hello. This is the Home Page.")
-     [:div [:a {:href "#/meetings"} "create meeting"]]])
-
-
-;; meeting
 
 (defn meeting-panel []
     [:div "This is the Meeting Page."
