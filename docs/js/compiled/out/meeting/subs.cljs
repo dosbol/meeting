@@ -10,3 +10,8 @@
   ::db
   (fn [db _]
    db))
+
+(re-frame/reg-sub
+  ::meetings
+  (fn [db _]
+   (vals (:meetings db))))
