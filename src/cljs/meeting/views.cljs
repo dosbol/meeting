@@ -49,7 +49,6 @@
       [:button {:type :button
                 :on-click #(do (re-frame/dispatch 
                   [::events/create-meeting! {:title (.-value (.getElementById js/document "titlecreate"))}])
-                  (re-frame/dispatch [::events/set-active-panel :home-panel])
                   (re-frame/dispatch [::events/set-hash! ""]))}
               "create meeting"]]])
 
