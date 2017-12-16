@@ -51,3 +51,8 @@
  :change-loc
   (fn [location]
     (set! (.-hash js/window.location) location)))
+
+(re-frame/reg-event-db
+ ::update-meeting!
+ (fn [db [_ meeting]]
+   (update-in db [:meetings (:active-meeting-id db)] merge meeting)))

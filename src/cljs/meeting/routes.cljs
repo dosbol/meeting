@@ -21,18 +21,22 @@
   ;; --------------------
   ;; define routes here
   (defroute "/" []
-    (re-frame/dispatch [::events/set-active-panel :home-panel]))
-
-  (defroute "/meetings" []
     (do
-      (re-frame/dispatch [::events/set-active-panel :meeting-panel])
+      (re-frame/dispatch [::events/set-active-panel :home-panel])
       (re-frame/dispatch [::events/unset-active-meeting-id])))
+
+  (defroute "/meetings/new" []
+    (re-frame/dispatch [::events/set-active-panel :create-panel]))
 
 
   (defroute "/meetings/:id" [id]
     (do
-      (re-frame/dispatch [::events/set-active-panel :meeting-panel])
-      (re-frame/dispatch [::events/set-active-meeting-id id])))
+      (re-frame/dispatch [::events/set-active-panel :view-panel])
+      (re-frame/dispatch [::events/set-active-meeting-id (js/parseInt id)])))
 
+  (defroute "/meetings/:id/edit" [id]
+    (do
+      (re-frame/dispatch [::events/set-active-panel :edit-panel])
+      (re-frame/dispatch [::events/set-active-meeting-id (js/parseInt id)])))
   ;; --------------------
   (hook-browser-navigation!))
