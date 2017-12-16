@@ -7,28 +7,34 @@
 
 ;; home page
 
-(defn meeting-item
+(defn meeting-row
   []
   (fn [{:keys [id title]}]
-    [:li 
-      [:div.view
-        [:label
-          title]
-        [:button
-          {:on-click #(re-frame/dispatch [::events/delete-meeting! id])} "delete"]]]))
+    [:tr 
+      [:td id]
+      [:td title]
+      [:td 
+        [:a
+          {:href (str "#/meetings/" id)} "view"]
+        " | "
+        [:a
+          {:on-click #(re-frame/dispatch [::events/delete-meeting! id]) :href "#"} "delete"]]]))
 
-(defn meeting-list
+(defn meeting-table
   []
   (let [meetings @(re-frame/subscribe [::subs/meetings])]
-        [:ul#meeting-list
-          (for [meeting  meetings]
-            ^{:key (:id meeting)} [meeting-item meeting])]))
+        [:table
+          [:thead
+            [:tr [:th "ID"] [:th "Title"] [:th "Actions"]]]
+          [:tbody
+           (for [meeting  meetings]
+             ^{:key (:id meeting)} [meeting-row meeting])]]))
 
 (defn home-panel []
     [:div (str "Hello. This is the Home Page.")
      [:div [:a {:href "#/meetings"} "create meeting"]]
      (when (seq @(re-frame/subscribe [::subs/meetings]))
-      [meeting-list])])
+      [meeting-table])])
 
 
 ;; meeting page
