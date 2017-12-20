@@ -5,6 +5,13 @@
             [meeting.events :as events]
             ))
 
+;;util
+(defn cons-meeting []
+  {:title (.-value (.getElementById js/document "title"))
+   :begin (.-value (.getElementById js/document "begin"))
+   :end (.-value (.getElementById js/document "end"))
+   :timezone (.-value (.getElementById js/document "timezone"))})
+
 ;; home page
 
 (defn meeting-row
@@ -42,22 +49,40 @@
 
 ;; create panel
 
-(defn input-title
-  [{:keys [props, title]}]
-  (let [inner (reagent/atom title)]
-    (fn [] [:input (merge props
+(defn input-text
+  [{:keys [props, text]}]
+  (let [inner (reagent/atom text) id (:id props)]
+    (fn [] 
+      [:div
+        [:label {:for id} id " : "]
+        [:input (merge props
                           {:type        "text"
+                           :name        id
                            :value       @inner
-                           :on-change   #(reset! inner (-> % .-target .-value))})])))
+                           :on-change   #(reset! inner (-> % .-target .-value))})]])))
+(defn input-select
+  [{:keys [props, selected]}]
+  (let [inner (reagent/atom selected) id (:id props)]
+    (fn [] 
+      [:div
+        [:label {:for id} id " : "]
+        [:select (merge props {:value @inner :name id :on-change #(reset! inner (-> % .-target .-value))})
+          [:option {:value ""} "choose timezone"]
+          [:option {:value :moscow} "Moscow"]
+          [:option {:value :khabarovsk} "Khabarovsk"]
+          [:option {:value :greenwich} "Greenwich"]]])))
 
 (defn create-panel []
     [:div "This is the Meeting Page."
     [:div [:a {:href "#/"} "go to Home Page"]]
     [:form
-      [input-title {:props {:id "titlecreate"} :title ""}]
+      [input-text {:props {:id "title"}}]
+      [input-text {:props {:id "begin"}}]
+      [input-text {:props {:id "end"}}]
+      [input-select {:props {:id "timezone"}:selected ""}]
       [:button {:type :button
                 :on-click #(do (re-frame/dispatch 
-                  [::events/create-meeting! {:title (.-value (.getElementById js/document "titlecreate"))}])
+                  [::events/create-meeting! (cons-meeting)])
                   (re-frame/dispatch [::events/set-hash! ""]))}
               "create meeting"]]])
 
@@ -69,22 +94,28 @@
     (let [meeting @(re-frame/subscribe [::subs/active-meeting])]
         [:table
           [:thead
-            [:tr [:th "ID"] [:th "Title"]]]
+            [:tr [:th "ID"] [:th "Title"] [:th "timezone"] [:th "Begin"] [:th "End"]]]
           [:tbody
-            [:tr [:td (:id meeting)] [:td (:title meeting)]]]])])
+            [:tr [:td (:id meeting)] [:td (:title meeting)] [:td (:timezone meeting)]
+                 [:td (:begin meeting)] [:td (:end meeting)]]]])])
 
 ;; edit panel
 
 (defn edit-panel []
-    [:div "This is the edit Page."
-    [:div [:a {:href "#/"} "go to Home Page"]]
-    [:form
-      [input-title {:props {:id "titleedit"} :title (:title @(re-frame/subscribe [::subs/active-meeting]))}]
-      [:button {:type :button
-                :on-click #(do (re-frame/dispatch 
-                  [::events/update-meeting! {:title (.-value (.getElementById js/document "titleedit"))}])
+  (let [meeting @(re-frame/subscribe [::subs/active-meeting])]
+    (fn []
+      [:div "This is the edit Page."
+      [:div [:a {:href "#/"} "go to Home Page"]]
+      [:form
+        [input-text {:props {:id "title"} :text (:title meeting)}]
+        [input-text {:props {:id "begin"} :text (:begin meeting)}]
+        [input-text {:props {:id "end"} :text (:end meeting)}]
+        [input-select {:props {:id "timezone"} :selected (:timezone meeting)}]
+        [:button {:type :button
+                  :on-click #(do (re-frame/dispatch 
+                  [::events/update-meeting! (cons-meeting)])
                   (re-frame/dispatch [::events/set-hash! ""]))}
-              "save"]]])
+              "save"]]])))
 
 ;; main
 
