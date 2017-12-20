@@ -5,14 +5,14 @@ goog.require('devtools.util');
 devtools.reporter.issues_url = "https://github.com/binaryage/cljs-devtools/issues";
 devtools.reporter.report_internal_error_BANG_ = (function devtools$reporter$report_internal_error_BANG_(var_args){
 var args__29462__auto__ = [];
-var len__29455__auto___41038 = arguments.length;
-var i__29456__auto___41039 = (0);
+var len__29455__auto___41052 = arguments.length;
+var i__29456__auto___41053 = (0);
 while(true){
-if((i__29456__auto___41039 < len__29455__auto___41038)){
-args__29462__auto__.push((arguments[i__29456__auto___41039]));
+if((i__29456__auto___41053 < len__29455__auto___41052)){
+args__29462__auto__.push((arguments[i__29456__auto___41053]));
 
-var G__41040 = (i__29456__auto___41039 + (1));
-i__29456__auto___41039 = G__41040;
+var G__41054 = (i__29456__auto___41053 + (1));
+i__29456__auto___41053 = G__41054;
 continue;
 } else {
 }
@@ -23,10 +23,10 @@ var argseq__29463__auto__ = ((((1) < args__29462__auto__.length))?(new cljs.core
 return devtools.reporter.report_internal_error_BANG_.cljs$core$IFn$_invoke$arity$variadic((arguments[(0)]),argseq__29463__auto__);
 });
 
-devtools.reporter.report_internal_error_BANG_.cljs$core$IFn$_invoke$arity$variadic = (function (e,p__41033){
-var vec__41034 = p__41033;
-var context = cljs.core.nth.call(null,vec__41034,(0),null);
-var footer = cljs.core.nth.call(null,vec__41034,(1),null);
+devtools.reporter.report_internal_error_BANG_.cljs$core$IFn$_invoke$arity$variadic = (function (e,p__41047){
+var vec__41048 = p__41047;
+var context = cljs.core.nth.call(null,vec__41048,(0),null);
+var footer = cljs.core.nth.call(null,vec__41048,(1),null);
 try{var message = (((e instanceof Error))?(function (){var or__28286__auto__ = e.message;
 if(cljs.core.truth_(or__28286__auto__)){
 return or__28286__auto__;
@@ -62,17 +62,17 @@ group_collapsed.apply(c,header);
 log.apply(c,details);
 
 return group_end.call(c);
-}catch (e41037){var e__$1 = e41037;
+}catch (e41051){var e__$1 = e41051;
 return console.error("FATAL: report-internal-error! failed",e__$1);
 }});
 
 devtools.reporter.report_internal_error_BANG_.cljs$lang$maxFixedArity = (1);
 
-devtools.reporter.report_internal_error_BANG_.cljs$lang$applyTo = (function (seq41031){
-var G__41032 = cljs.core.first.call(null,seq41031);
-var seq41031__$1 = cljs.core.next.call(null,seq41031);
-return devtools.reporter.report_internal_error_BANG_.cljs$core$IFn$_invoke$arity$variadic(G__41032,seq41031__$1);
+devtools.reporter.report_internal_error_BANG_.cljs$lang$applyTo = (function (seq41045){
+var G__41046 = cljs.core.first.call(null,seq41045);
+var seq41045__$1 = cljs.core.next.call(null,seq41045);
+return devtools.reporter.report_internal_error_BANG_.cljs$core$IFn$_invoke$arity$variadic(G__41046,seq41045__$1);
 });
 
 
-//# sourceMappingURL=reporter.js.map?rel=1513400468315
+//# sourceMappingURL=reporter.js.map?rel=1513768337716

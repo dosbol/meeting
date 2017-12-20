@@ -19,11 +19,11 @@ return new cljs.core.Keyword(null,"active-meeting-id","active-meeting-id",471672
 }));
 re_frame.core.reg_sub.call(null,new cljs.core.Keyword("meeting.subs","active-meeting","meeting.subs/active-meeting",-1433674092),(function (_){
 return new cljs.core.PersistentVector(null, 2, 5, cljs.core.PersistentVector.EMPTY_NODE, [re_frame.core.subscribe.call(null,new cljs.core.PersistentVector(null, 1, 5, cljs.core.PersistentVector.EMPTY_NODE, [new cljs.core.Keyword("meeting.subs","active-meeting-id","meeting.subs/active-meeting-id",1908472538)], null)),re_frame.core.subscribe.call(null,new cljs.core.PersistentVector(null, 1, 5, cljs.core.PersistentVector.EMPTY_NODE, [new cljs.core.Keyword("meeting.subs","meetings-raw","meeting.subs/meetings-raw",1443678768)], null))], null);
-}),(function (p__33285){
-var vec__33286 = p__33285;
-var id = cljs.core.nth.call(null,vec__33286,(0),null);
-var meetings = cljs.core.nth.call(null,vec__33286,(1),null);
+}),(function (p__32434){
+var vec__32435 = p__32434;
+var id = cljs.core.nth.call(null,vec__32435,(0),null);
+var meetings = cljs.core.nth.call(null,vec__32435,(1),null);
 return cljs.core.get.call(null,meetings,id);
 }));
 
-//# sourceMappingURL=subs.js.map?rel=1513458291920
+//# sourceMappingURL=subs.js.map?rel=1513768294066

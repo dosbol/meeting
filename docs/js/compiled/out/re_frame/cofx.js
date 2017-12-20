@@ -77,8 +77,8 @@ return re_frame.registrar.register_handler.call(null,re_frame.cofx.kind,id,handl
  * to the event handler at call time.
  */
 re_frame.cofx.inject_cofx = (function re_frame$cofx$inject_cofx(var_args){
-var G__44948 = arguments.length;
-switch (G__44948) {
+var G__44962 = arguments.length;
+switch (G__44962) {
 case 1:
 return re_frame.cofx.inject_cofx.cljs$core$IFn$_invoke$arity$1((arguments[(0)]));
 
@@ -124,4 +124,4 @@ return cljs.core.assoc.call(null,coeffects,new cljs.core.Keyword(null,"db","db",
 }));
 re_frame.cofx.inject_db = re_frame.cofx.inject_cofx.call(null,new cljs.core.Keyword(null,"db","db",993250759));
 
-//# sourceMappingURL=cofx.js.map?rel=1513400495987
+//# sourceMappingURL=cofx.js.map?rel=1513768368820
