@@ -85,11 +85,15 @@ goog.addDependency("../com/cognitect/transit/eq.js", ['com.cognitect.transit.eq'
 goog.addDependency("../com/cognitect/transit/types.js", ['com.cognitect.transit.types'], ['com.cognitect.transit.util', 'com.cognitect.transit.eq', 'goog.math.Long']);
 goog.addDependency("../com/cognitect/transit/impl/decoder.js", ['com.cognitect.transit.impl.decoder'], ['com.cognitect.transit.util', 'com.cognitect.transit.delimiters', 'com.cognitect.transit.caching', 'com.cognitect.transit.types']);
 goog.addDependency("../com/cognitect/transit/impl/reader.js", ['com.cognitect.transit.impl.reader'], ['com.cognitect.transit.impl.decoder', 'com.cognitect.transit.caching']);
-goog.addDependency("../cljs_time/core.js", ['cljs_time.core'], ['goog.date.UtcDateTime', 'cljs.core', 'goog.date.Interval', 'cljs_time.internal.core', 'goog.date.DateTime', 'goog.date.Date', 'clojure.string']);
+goog.addDependency("../cljs_time/core.js", ['cljs_time.core'], ['goog.date.UtcDateTime', 'cljs.core', 'goog.date.Interval', 'cljs_time.internal.core', 'goog.date.DateTime', 'goog.date.Date', 'clojure.string', 'goog.date']);
 goog.addDependency("../com/cognitect/transit/handlers.js", ['com.cognitect.transit.handlers'], ['com.cognitect.transit.util', 'com.cognitect.transit.types', 'goog.math.Long']);
 goog.addDependency("../com/cognitect/transit/impl/writer.js", ['com.cognitect.transit.impl.writer'], ['com.cognitect.transit.util', 'com.cognitect.transit.caching', 'com.cognitect.transit.handlers', 'com.cognitect.transit.types', 'com.cognitect.transit.delimiters', 'goog.math.Long']);
 goog.addDependency("../com/cognitect/transit.js", ['com.cognitect.transit'], ['com.cognitect.transit.util', 'com.cognitect.transit.impl.reader', 'com.cognitect.transit.impl.writer', 'com.cognitect.transit.types', 'com.cognitect.transit.eq', 'com.cognitect.transit.impl.decoder', 'com.cognitect.transit.caching']);
 goog.addDependency("../cognitect/transit.js", ['cognitect.transit'], ['com.cognitect.transit.eq', 'cljs.core', 'com.cognitect.transit.types', 'com.cognitect.transit', 'goog.math.Long']);
+goog.addDependency("../cljs_time/internal/parse.js", ['cljs_time.internal.parse'], ['goog.date.UtcDateTime', 'cljs.core', 'goog.date.Interval', 'cljs_time.internal.core', 'goog.date.DateTime', 'goog.date.Date', 'clojure.string']);
+goog.addDependency("../cljs_time/internal/unparse.js", ['cljs_time.internal.unparse'], ['cljs_time.internal.parse', 'goog.date.UtcDateTime', 'cljs.core', 'goog.date.Interval', 'cljs_time.internal.core', 'goog.date.DateTime', 'goog.date.Date', 'goog.date']);
+goog.addDependency("../cljs_time/format.js", ['cljs_time.format'], ['cljs_time.internal.parse', 'cljs_time.internal.unparse', 'cljs.core', 'goog.date.duration', 'cljs_time.core', 'clojure.set', 'cljs_time.internal.core']);
+goog.addDependency("../cljs_time/coerce.js", ['cljs_time.coerce'], ['goog.date.UtcDateTime', 'cljs.core', 'cljs_time.core', 'cljs_time.format']);
 goog.addDependency("../re_com/misc.js", ['re_com.misc'], ['re_com.util', 're_com.popover', 're_com.box', 'reagent.core', 'cljs.core', 're_com.validate']);
 goog.addDependency("../devtools/protocols.js", ['devtools.protocols'], ['cljs.core']);
 goog.addDependency("../re_com/dropdown.js", ['re_com.dropdown'], ['re_com.util', 're_com.box', 'reagent.core', 'cljs.core', 're_com.validate', 'clojure.string']);
@@ -101,8 +105,7 @@ goog.addDependency("../re_frisk_shell/re_com/splits.js", ['re_frisk_shell.re_com
 goog.addDependency("../re_com/text.js", ['re_com.text'], ['re_com.util', 're_com.box', 'cljs.core', 're_com.validate']);
 goog.addDependency("../re_com/typeahead.js", ['re_com.typeahead'], ['re_com.util', 're_com.popover', 're_com.box', 'reagent.core', 'cljs.core', 'cljs.core.async', 're_com.validate', 'goog.events.KeyCodes', 're_com.misc']);
 goog.addDependency("../re_com/alert.js", ['re_com.alert'], ['re_com.util', 're_com.box', 'cljs.core', 're_com.buttons', 're_com.validate']);
-goog.addDependency("../cljs_time/format.js", ['cljs_time.format'], ['goog.string', 'cljs.core', 'goog.date.duration', 'cljs_time.core', 'clojure.set', 'cljs_time.internal.core', 'goog.string.format', 'clojure.string', 'goog.date']);
-goog.addDependency("../cljs_time/predicates.js", ['cljs_time.predicates'], ['cljs.core', 'cljs_time.core']);
+goog.addDependency("../cljs_time/predicates.js", ['cljs_time.predicates'], ['cljs.core', 'cljs_time.core', 'cljs_time.coerce']);
 goog.addDependency("../re_com/datepicker.js", ['re_com.datepicker'], ['re_com.util', 're_com.popover', 're_com.box', 'reagent.core', 'cljs.core', 'cljs_time.core', 're_com.validate', 'cljs_time.format', 'cljs_time.predicates']);
 goog.addDependency("../re_com/input_time.js", ['re_com.input_time'], ['re_com.util', 're_com.text', 're_com.box', 'reagent.core', 'cljs.core', 're_com.validate']);
 goog.addDependency("../re_com/selection_list.js", ['re_com.selection_list'], ['re_com.util', 're_com.text', 're_com.box', 'cljs.core', 're_com.validate', 're_com.misc']);

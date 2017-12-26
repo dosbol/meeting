@@ -5,12 +5,8 @@
             [meeting.events :as events]
             ))
 
-;;util
-(defn cons-meeting []
-  {:title (.-value (.getElementById js/document "title"))
-   :begin (.-value (.getElementById js/document "begin"))
-   :end (.-value (.getElementById js/document "end"))
-   :timezone (.-value (.getElementById js/document "timezone"))})
+(defonce new-meeting (reagent/atom {}))
+(defonce active-meeting (reagent/atom {}))
 
 ;; home page
 
@@ -47,44 +43,46 @@
       [meeting-table])])
 
 
-;; create panel
-
 (defn input-text
-  [{:keys [props, text]}]
-  (let [inner (reagent/atom text) id (:id props)]
+  [{:keys [props, state]}]
+  (let [id (:id props) kwd (keyword id)]
     (fn [] 
       [:div
         [:label {:for id} id " : "]
         [:input (merge props
                           {:type        "text"
                            :name        id
-                           :value       @inner
-                           :on-change   #(reset! inner (-> % .-target .-value))})]])))
+                           :value       (kwd @state)
+                           :on-change   #(swap! state assoc kwd (-> % .-target .-value))})]])))
 (defn input-select
-  [{:keys [props, selected]}]
-  (let [inner (reagent/atom selected) id (:id props)]
+  [{:keys [props, state]}]
+  (let [id (:id props) kwd (keyword id)]
     (fn [] 
       [:div
         [:label {:for id} id " : "]
-        [:select (merge props {:value @inner :name id :on-change #(reset! inner (-> % .-target .-value))})
+        [:select (merge props {:value (kwd @state) :name id :on-change #(swap! state assoc kwd (-> % .-target .-value))})
           [:option {:value ""} "choose timezone"]
           [:option {:value :moscow} "Moscow"]
           [:option {:value :khabarovsk} "Khabarovsk"]
           [:option {:value :greenwich} "Greenwich"]]])))
 
+;; create
+
 (defn create-panel []
+  (do 
+    (reset! new-meeting {})
     [:div "This is the Meeting Page."
     [:div [:a {:href "#/"} "go to Home Page"]]
     [:form
-      [input-text {:props {:id "title"}}]
-      [input-text {:props {:id "begin"}}]
-      [input-text {:props {:id "end"}}]
-      [input-select {:props {:id "timezone"}:selected ""}]
+      [input-text {:props {:id "title"} :state new-meeting}]
+      [input-text {:props {:id "begin"} :state new-meeting}]
+      [input-text {:props {:id "end"} :state new-meeting}]
+      [input-select {:props {:id "timezone"} :state new-meeting}]
       [:button {:type :button
                 :on-click #(do (re-frame/dispatch 
-                  [::events/create-meeting! (cons-meeting)])
+                  [::events/create-meeting! @new-meeting])
                   (re-frame/dispatch [::events/set-hash! ""]))}
-              "create meeting"]]])
+              "create meeting"]]]))
 
 ;; view panel
 
@@ -102,18 +100,19 @@
 ;; edit panel
 
 (defn edit-panel []
-  (let [meeting @(re-frame/subscribe [::subs/active-meeting])]
+  (do
+    (reset! active-meeting @(re-frame/subscribe [::subs/active-meeting]))
     (fn []
       [:div "This is the edit Page."
       [:div [:a {:href "#/"} "go to Home Page"]]
       [:form
-        [input-text {:props {:id "title"} :text (:title meeting)}]
-        [input-text {:props {:id "begin"} :text (:begin meeting)}]
-        [input-text {:props {:id "end"} :text (:end meeting)}]
-        [input-select {:props {:id "timezone"} :selected (:timezone meeting)}]
+        [input-text {:props {:id "title"} :state active-meeting}]
+        [input-text {:props {:id "begin"} :state active-meeting}]
+        [input-text {:props {:id "end"} :state active-meeting}]
+        [input-select {:props {:id "timezone"} :state active-meeting}]
         [:button {:type :button
                   :on-click #(do (re-frame/dispatch 
-                  [::events/update-meeting! (cons-meeting)])
+                  [::events/update-meeting! @active-meeting])
                   (re-frame/dispatch [::events/set-hash! ""]))}
               "save"]]])))
 

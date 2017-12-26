@@ -4,61 +4,73 @@
   Create a DateTime instance with date-time (or a local DateTime instance with local-date-time),
   specifying the year, month, day, hour, minute, second, and millisecond:
 
-    => (date-time 1986 10 14 4 3 27 456)
-    #<DateTime 1986-10-14T04:03:27.456Z>
+```clojure
+=> (date-time 1986 10 14 4 3 27 456)
+#<DateTime 1986-10-14T04:03:27.456Z>
 
-    => (local-date-time 1986 10 14 4 3 27 456)
-    #<DateTime 1986-10-14T04:03:27.456>
+=> (local-date-time 1986 10 14 4 3 27 456)
+#<DateTime 1986-10-14T04:03:27.456>
 
-  Less-significant fields can be omitted:
+ss-significant fields can be omitted:
 
-    => (date-time 1986 10 14)
-    #<DateTime 1986-10-14T00:00:00.000Z>
+=> (date-time 1986 10 14)
+#<DateTime 1986-10-14T00:00:00.000Z>
 
-    => (local-date-time 1986 10 14)
-    #<DateTime 1986-10-14T00:00:00.000>
+=> (local-date-time 1986 10 14)
+#<DateTime 1986-10-14T00:00:00.000>
+```
 
   Get the current time with (now) and the start of the Unix epoch with (epoch).
 
   Once you have a date-time, use accessors like hour and second to access the
   corresponding fields:
 
-    => (hour (date-time 1986 10 14 22))
-    22
+```clojure
+=> (hour (date-time 1986 10 14 22))
+22
 
-    => (hour (local-date-time 1986 10 14 22))
-    22
+=> (hour (local-date-time 1986 10 14 22))
+22
+```
 
   The functions after? and before? determine the relative position of two
   DateTime instances:
 
-    => (after? (date-time 1986 10) (date-time 1986 9))
-    true
+```clojure
+=> (after? (date-time 1986 10) (date-time 1986 9))
+true
 
-    => (after? (local-date-time 1986 10) (local-date-time 1986 9))
-    true
+=> (after? (local-date-time 1986 10) (local-date-time 1986 9))
+true
+```
 
   Often you will want to find a date some amount of time from a given date. For
   example, to find the time 1 month and 3 weeks from a given date-time:
 
-    => (plus (date-time 1986 10 14) (months 1) (weeks 3))
-    #<DateTime 1986-12-05T00:00:00.000Z>
+```clojure
+=> (plus (date-time 1986 10 14) (months 1) (weeks 3))
+#<DateTime 1986-12-05T00:00:00.000Z>
 
-    => (plus (local-date-time 1986 10 14) (months 1) (weeks 3))
-    #<DateTime 1986-12-05T00:00:00.000Z>
+=> (plus (local-date-time 1986 10 14) (months 1) (weeks 3))
+#<DateTime 1986-12-05T00:00:00.000Z>
+```
 
   An Interval is used to represent the span of time between two DateTime
   instances. Construct one using interval, then query them using within?,
   overlaps?, and abuts?
 
-    => (within? (interval (date-time 1986) (date-time 1990)) (date-time 1987))
-    true
+```clojure
+=> (within? (interval (date-time 1986) (date-time 1990)) (date-time 1987))
+true
+```
 
   To find the amount of time encompased by an interval, use in-seconds and
   in-minutes:
 
-    => (in-minutes (interval (date-time 1986 10 2) (date-time 1986 10 14)))
-    17280
+```clojure
+=> (in-minutes (interval (date-time 1986 10 2) (date-time 1986 10 14)))
+17280
+```
 
   Note that all functions in this namespace work with Joda objects or ints. If
   you need to print or parse date-times, see cljs-time.format. If you need to
@@ -67,11 +79,15 @@
   (:require
    [cljs-time.internal.core :as internal :refer [leap-year? format]]
    [clojure.string :as string]
-   goog.date.Interval)
+   goog.date.Interval
+   goog.date)
   (:import
    goog.date.Date
    goog.date.DateTime
    goog.date.UtcDateTime))
+
+(defn deprecated [message]
+  (println "DEPRECATION WARNING: " message))
 
 (def ^{:doc "**Note:** Equality in goog.date.* (and also with plain
 javascript dates) is not the same as in Joda/clj-time. Two date
@@ -101,7 +117,8 @@ expected."}
   (plus- [this period] "Returns a new date/time corresponding to the given date/time moved forwards by the given Period(s).")
   (minus- [this period] "Returns a new date/time corresponding to the given date/time moved backwards by the given Period(s).")
   (first-day-of-the-month- [this] "Returns the first day of the month")
-  (last-day-of-the-month- [this] "Returns the last day of the month"))
+  (last-day-of-the-month- [this] "Returns the last day of the month")
+  (week-number-of-year [this] "Returs the number of weeks in the year"))
 
 (defprotocol InTimeUnitProtocol
   "Interface for in-<time unit> functions"
@@ -131,40 +148,44 @@ expected."}
   ([p1 v1 & kvs]
    (apply assoc (period p1 v1) kvs)))
 
+(def period-fns
+  {:millis (fn [date op value]
+             (let [ms (op (.getTime date) value)]
+               (doto date (.setTime ms))))
+   :weeks  (fn [date op value]
+             (let [days (op 0 (* value 7))]
+               (doto date
+                 (.add (goog.date.Interval. goog.date.Interval.DAYS days)))))})
+
 (def periods
-  (let [fixed-time-fn (fn [f set-fn op date value]
-                        (let [date (.clone date)]
-                          (when value (set-fn date (op (f date) value)))
-                          date))]
-    {:millis (partial fixed-time-fn milli #(.setMilliseconds %1 %2))
-     :seconds (partial fixed-time-fn second #(.setSeconds %1 %2))
-     :minutes (partial fixed-time-fn minute #(.setMinutes %1 %2))
-     :hours (partial fixed-time-fn hour #(.setHours %1 %2))
-     :days (partial fixed-time-fn day #(.setDate %1 %2))
-     :weeks (fn [op date value]
-              (let [date (.clone date)]
-                (when value (.setDate date (op (day date) (* 7 value))))
-                date))
-     :months (fn [op date value]
-               (let [date (.clone date)]
-                 (when value
-                   (let [m (op 0 value)
-                         i (goog.date.Interval. goog.date.Interval.MONTHS m)]
-                     (.add date i)))
-                 date))
-     :years (fn [op date value]
-              (let [date (.clone date)]
-                (when value
-                  (if (and (leap-year? (year date))
-                           (= 2 (month date))
-                           (= 29 (day date)))
-                    (.setDate date 28))
-                  (.setYear date (op (year date) value)))
-                date))}))
+  {:seconds goog.date.Interval.SECONDS
+   :minutes goog.date.Interval.MINUTES
+   :hours   goog.date.Interval.HOURS
+   :days    goog.date.Interval.DAYS
+   :months  goog.date.Interval.MONTHS
+   :years   goog.date.Interval.YEARS})
 
 (defn period-fn [p]
   (fn [operator date]
-    (reduce (fn [d [k v]] ((periods k) operator d v)) date p)))
+    (let [date' (.clone date)
+          ->goog-interval (fn [op interval value]
+                            (when (and interval value)
+                              (goog.date.Interval. interval (op 0 value))))]
+      (doseq [[k v] p]
+        (if-let [period (periods k)]
+          (when-let [i (->goog-interval operator period v)] (.add date' i))
+          (when-let [f (period-fns k)] (f date' operator v))))
+      date')))
+
+(defn- compare-local-dates [o other]
+  (let [yo (.getYear o)
+        yother (.getYear other)
+        dayo (.getDayOfYear o)
+        dayother (.getDayOfYear other)]
+    (cond
+      (not= yo yother) (- yo yother)
+      (not= dayo dayother) (- dayo dayother)
+      :else 0)))
 
 (extend-protocol DateTimeProtocol
   goog.date.UtcDateTime
@@ -187,6 +208,9 @@ expected."}
     (minus-
      (goog.date.UtcDateTime. (.getYear this) (inc (.getMonth this)) 1 0 0 0 0)
      (period :days 1)))
+  (week-number-of-year [this]
+    (goog.date/getWeekNumber
+     (.getYear this) (.getMonth this) (.getDate this)))
 
   goog.date.DateTime
   (year [this] (.getYear this))
@@ -208,6 +232,9 @@ expected."}
     (minus-
      (goog.date.DateTime. (.getYear this) (inc (.getMonth this)) 1 0 0 0 0)
      (period :days 1)))
+  (week-number-of-year [this]
+    (goog.date/getWeekNumber
+     (.getYear this) (.getMonth this) (.getDate this)))
 
   goog.date.Date
   (year [this] (.getYear this))
@@ -218,9 +245,9 @@ expected."}
   (minute [this] nil)
   (second [this] nil)
   (milli [this] nil)
-  (equal? [this that] (== (.getTime this) (.getTime that)))
-  (after? [this that] (> (.getTime this) (.getTime that)))
-  (before? [this that] (< (.getTime this) (.getTime that)))
+  (equal? [this that] (.equals this that))
+  (after? [this that] (pos? (compare-local-dates this that)))
+  (before? [this that] (neg? (compare-local-dates this that)))
   (plus- [this period] ((period-fn period) + this))
   (minus- [this period] ((period-fn period) - this))
   (first-day-of-the-month- [this]
@@ -228,16 +255,19 @@ expected."}
   (last-day-of-the-month- [this]
     (minus-
      (goog.date.Date. (.getYear this) (inc (.getMonth this)) 1)
-     (period :days 1))))
+     (period :days 1)))
+  (week-number-of-year [this]
+    (goog.date/getWeekNumber
+     (.getYear this) (.getMonth this) (.getDate this))))
 
 (def utc #js {:id "UTC" :std_offset 0 :names ["UTC"] :transitions []})
 
 (defn default-ms-fn []
-  (fn [] (js/Date.now)))
+  (fn [] (.getTime (goog.date.UtcDateTime.))))
 
 (defn offset-ms-fn
   [offset]
-  (fn [] (+ (js/Date.now) offset)))
+  (fn [] (+ (.getTime (goog.date.UtcDateTime.)) offset)))
 
 (defn static-ms-fn
   [ms]
@@ -334,16 +364,16 @@ they will default to 1 or 0 as appropriate."
    (goog.date.DateTime. year (dec month) day hour minute second millis)))
 
 (defn local-date
-  "Constructs and returns a new local DateTime.
-Specify the year, month, and day. Does not deal with timezones."
+  "Constructs and returns a new goog.date.Date in the local timezone.
+Specify the year, month, and day."
   [year month day]
   (goog.date.Date. year (dec month) day))
 
 (defn today
-  "Constructs and returns a new local DateTime representing today's date.
-  local DateTime objects do not deal with timezones at all."
+  "Constructs and returns a new goog.date.Date representing today in the local timezone."
   []
-  (doto (goog.date.Date.) (.setTime (*ms-fn*))))
+  ;Note that the actual time field of the constructed date is midnight of 'today'
+  (goog.date.Date. (js/Date. (*ms-fn*))))
 
 (defn time-zone-for-offset
   "Returns a timezone map for the given offset, specified either in hours or
@@ -375,10 +405,18 @@ Specify the year, month, and day. Does not deal with timezones."
 (defn to-default-time-zone
   "Assuming `dt` is in the UTC timezone, returns a DateTime
   corresponding to the same absolute instant in time as the given
-  DateTime, but with calendar fields corresponding to in the default
+  DateTime, but with calendar fields corresponding to the default
   (local) timezone."
   [dt]
   (goog.date.DateTime. dt))
+
+(defn to-utc-time-zone
+  "Assuming `dt` is in the Local timezone, returns a UtcDateTime
+  corresponding to the same absolute instant in time as the given
+  DateTime, but with calendar fields corresponding to the UTC
+  timezone."
+  [dt]
+  (goog.date.UtcDateTime.fromTimestamp (.getTime dt)))
 
 (defn from-default-time-zone
   "Assuming `dt` is in the UTC timezone, returns a DateTime
@@ -398,6 +436,28 @@ Specify the year, month, and day. Does not deal with timezones."
                        (.getMinutes dt)
                        (.getSeconds dt)
                        (.getMilliseconds dt)))
+
+(defn from-utc-time-zone
+  "Assuming `dt` is in the local timezone, returns a UtcDateTime
+  corresponding to the same point in calendar time as the given
+  DateTime, but for a correspondingly different absolute instant in
+  time in the UTC timezone.
+
+  Note: This implementation uses the ECMAScript 5.1 implementation which
+  trades some historical daylight savings transition accuracy for simplicity.
+  see http://es5.github.io/#x15.9.1.8
+  "
+  [dt]
+  (let [year (.getYear dt)
+        month (.getMonth dt)
+        date (.getDate dt)]
+    (if (= goog.date.Date (type dt))
+      (goog.date.UtcDateTime. year month date)
+      (goog.date.UtcDateTime. year month date
+                              (.getHours dt)
+                              (.getMinutes dt)
+                              (.getSeconds dt)
+                              (.getMilliseconds dt)))))
 
 (defn years
   "Given a number, returns a Period representing that many years.
@@ -554,7 +614,7 @@ Specify the year, month, and day. Does not deal with timezones."
               {:type :unsupported-operation}))))
 
 (extend-protocol InTimeUnitProtocol
-  cljs-time.core.Period
+  Period
   (in-millis [{:keys [millis seconds minutes hours days weeks months years]}]
     (cond months (conversion-error :months :millis)
           years (conversion-error :years :millis)
@@ -587,7 +647,7 @@ Specify the year, month, and day. Does not deal with timezones."
           weeks (conversion-error :weeks :years)
           months (int (+ (/ months 12) years))
           years years))
-  cljs-time.core.Interval
+  Interval
   (in-millis [{:keys [start end]}] (- (.getTime end) (.getTime start)))
   (in-seconds [this] (int (/ (in-millis this) 1000)))
   (in-minutes [this] (int (/ (in-seconds this) 60)))
@@ -625,6 +685,21 @@ Specify the year, month, and day. Does not deal with timezones."
      (or (and (before? start-b end-a) (after? end-b start-a))
          (and (after? end-b start-a) (before? start-b end-a))
          (or (= start-a end-b) (= start-b end-a)))))
+
+(defn overlap
+  "Returns an Interval representing the overlap of the specified Intervals.
+ Returns nil if the Intervals do not overlap.
+ The first argument must not be nil.
+ If the second argument is nil then the overlap of the first argument
+ and a zero duration interval with both start and end times equal to the
+ current time is returned."
+  [i-a i-b]
+  ;; from joda-time AbstractInterval.overlaps:
+  ;; null argument means a zero length interval 'now'.
+  (cond (nil? i-b) (let [n (now)] (overlap i-a (interval n n)))
+        (overlaps? i-a i-b) (interval (latest (start i-a) (start i-b))
+                                      (earliest (end i-a) (end i-b)))
+        :else nil))
 
 (defn abuts?
   "Returns true if Interval a abuts b, i.e. then end of a is exactly the
@@ -707,7 +782,7 @@ Specify the year, month, and day. Does not deal with timezones."
 
 (extend-protocol IToPeriod
 
-  cljs-time.core.Interval
+  Interval
   (->period [{:keys [start end] :as interval}]
     (let [years (in-years interval)
           start-year (year start)
@@ -735,20 +810,16 @@ Specify the year, month, and day. Does not deal with timezones."
               :millis (- (in-millis interval)
                          (* 1000 (+ seconds seconds-to-remove))))))
 
-  cljs-time.core.Period
+  Period
   (->period [period] period))
 
 (defn today-at
   ([hours minutes seconds millis]
-   (let [midnight (doto (goog.date.Date.) (.setTime (*ms-fn*)))]
-     (doto (goog.date.UtcDateTime. 0)
-       (.setYear (.getYear midnight))
-       (.setMonth (.getMonth midnight))
-       (.setDate (.getDate midnight))
-       (.setHours hours)
-       (.setMinutes minutes)
-       (.setSeconds seconds)
-       (.setMilliseconds millis))))
+   (doto (goog.date.UtcDateTime.)
+     (.setHours hours)
+     (.setMinutes minutes)
+     (.setSeconds seconds)
+     (.setMilliseconds millis)))
   ([hours minutes seconds]
    (today-at hours minutes seconds 0))
   ([hours minutes]
@@ -757,3 +828,14 @@ Specify the year, month, and day. Does not deal with timezones."
 (defn do-at* [base-date-time body-fn]
   (binding [*ms-fn* (static-ms-fn (.getTime base-date-time))]
     (body-fn)))
+
+(defn floor
+  "Floors the given date-time dt to the given time unit dt-fn,
+ e.g. (floor (now) hour) returns (now) for all units
+ up to and including the hour"
+  ([dt dt-fn]
+   (let [dt-fns [year month day hour minute second milli]]
+     (apply date-time
+            (map apply
+                 (concat (take-while (partial not= dt-fn) dt-fns) [dt-fn])
+                 (repeat [dt]))))))
