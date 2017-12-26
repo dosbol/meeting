@@ -2,7 +2,10 @@
   :dependencies [[org.clojure/clojure "1.8.0"]
                  [org.clojure/clojurescript "1.9.908"]
                  [reagent "0.7.0"]
-                 [re-frame "0.10.2"]
+                 [re-frame "0.10.2"]                 
+                 [com.andrewmcveigh/cljs-time "0.5.0"]
+                 [org.clojure/core.async "0.2.391"]
+                 [re-com "2.1.0"]
                  [secretary "1.2.3"]]
 
   :plugins [[lein-cljsbuild "1.1.5"]]
