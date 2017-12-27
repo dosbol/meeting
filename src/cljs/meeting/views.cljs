@@ -3,10 +3,18 @@
             [reagent.core  :as reagent]
             [meeting.subs :as subs]
             [meeting.events :as events]
-            ))
+            [re-com.core :refer [input-text single-dropdown datepicker-dropdown]]
+            [cljs-time.core    :refer [now days minus plus day-of-week before?]]
+            [cljs-time.coerce  :refer [to-local-date]]
+            [cljs-time.format  :refer [formatter unparse]]))
 
-(defonce new-meeting (reagent/atom {}))
-(defonce active-meeting (reagent/atom {}))
+(def skeleton {:title ""})
+(def timezones [{:id :moscow :label "Moscow"}
+                {:id :khabarovsk :label "Khabarovsk"}
+                {:id :greenwich :label "Greenwich"}])
+
+(defonce new-meeting (reagent/atom skeleton))
+(defonce active-meeting (reagent/atom skeleton))
 
 ;; home page
 
@@ -42,47 +50,40 @@
      (when (seq @(re-frame/subscribe [::subs/meetings]))
       [meeting-table])])
 
-
-(defn input-text
-  [{:keys [props, state]}]
-  (let [id (:id props) kwd (keyword id)]
-    (fn [] 
-      [:div
-        [:label {:for id} id " : "]
-        [:input (merge props
-                          {:type        "text"
-                           :name        id
-                           :value       (kwd @state)
-                           :on-change   #(swap! state assoc kwd (-> % .-target .-value))})]])))
-(defn input-select
-  [{:keys [props, state]}]
-  (let [id (:id props) kwd (keyword id)]
-    (fn [] 
-      [:div
-        [:label {:for id} id " : "]
-        [:select (merge props {:value (kwd @state) :name id :on-change #(swap! state assoc kwd (-> % .-target .-value))})
-          [:option {:value ""} "choose timezone"]
-          [:option {:value :moscow} "Moscow"]
-          [:option {:value :khabarovsk} "Khabarovsk"]
-          [:option {:value :greenwich} "Greenwich"]]])))
-
 ;; create
 
 (defn create-panel []
   (do 
-    (reset! new-meeting {})
-    [:div "This is the Meeting Page."
-    [:div [:a {:href "#/"} "go to Home Page"]]
-    [:form
-      [input-text {:props {:id "title"} :state new-meeting}]
-      [input-text {:props {:id "begin"} :state new-meeting}]
-      [input-text {:props {:id "end"} :state new-meeting}]
-      [input-select {:props {:id "timezone"} :state new-meeting}]
-      [:button {:type :button
-                :on-click #(do (re-frame/dispatch 
-                  [::events/create-meeting! @new-meeting])
-                  (re-frame/dispatch [::events/set-hash! ""]))}
-              "create meeting"]]]))
+    (reset! new-meeting skeleton)
+    (let [begindate (reagent/atom (now)) enddate (reagent/atom (now))]
+      [:div "This is the Meeting Page."
+      [:div [:a {:href "#/"} "go to Home Page"]]
+      [:form
+        [input-text
+          :model        ""
+          :placeholder  "title"
+          :on-change    #(swap! new-meeting assoc :title %)]
+        [single-dropdown
+          :choices     timezones
+          :model       nil
+          :on-change   #(swap! new-meeting assoc :timezone %)
+          :placeholder "choose timezone"]
+        [:br]
+        [datepicker-dropdown
+          :model        begindate
+          :format        "dd.MM.yyyy"
+          :on-change     (fn [d] (do (swap! new-meeting assoc :begin d)(reset! begindate d)))]
+        [:br]
+        [datepicker-dropdown
+          :model        enddate
+          :format        "dd.MM.yyyy"
+          :on-change     (fn [d] (do (swap! new-meeting assoc :end d)(reset! enddate d)))]
+        [:br]
+        [:button {:type :button
+                  :on-click #(do (re-frame/dispatch 
+                    [::events/create-meeting! @new-meeting])
+                    (re-frame/dispatch [::events/set-hash! ""]))}
+                "create meeting"]]])))
 
 ;; view panel
 
@@ -95,7 +96,7 @@
             [:tr [:th "ID"] [:th "Title"] [:th "timezone"] [:th "Begin"] [:th "End"]]]
           [:tbody
             [:tr [:td (:id meeting)] [:td (:title meeting)] [:td (:timezone meeting)]
-                 [:td (:begin meeting)] [:td (:end meeting)]]]])])
+                 [:td (.toString (or (:begin meeting) ""))] [:td (.toString (or (:end meeting) ""))]]]])])
 
 ;; edit panel
 
@@ -103,18 +104,35 @@
   (do
     (reset! active-meeting @(re-frame/subscribe [::subs/active-meeting]))
     (fn []
-      [:div "This is the edit Page."
-      [:div [:a {:href "#/"} "go to Home Page"]]
-      [:form
-        [input-text {:props {:id "title"} :state active-meeting}]
-        [input-text {:props {:id "begin"} :state active-meeting}]
-        [input-text {:props {:id "end"} :state active-meeting}]
-        [input-select {:props {:id "timezone"} :state active-meeting}]
-        [:button {:type :button
-                  :on-click #(do (re-frame/dispatch 
-                  [::events/update-meeting! @active-meeting])
-                  (re-frame/dispatch [::events/set-hash! ""]))}
-              "save"]]])))
+      (let [begindate (reagent/atom (:begin @active-meeting)) enddate (reagent/atom (:end @active-meeting))]
+        [:div "This is the edit Page."
+        [:div [:a {:href "#/"} "go to Home Page"]]
+        [:form
+          [input-text
+            :model        (:title @active-meeting)
+            :placeholder  "title"
+            :on-change    #(swap! active-meeting assoc :title %)]
+          [single-dropdown
+            :choices     timezones
+            :model       (:timezone @active-meeting)
+            :on-change   #(swap! active-meeting assoc :timezone %)
+            :placeholder "choose timezone"]
+          [:br]
+          [datepicker-dropdown
+            :model        begindate
+            :format        "dd.MM.yyyy"
+            :on-change     (fn [d] (do (swap! active-meeting assoc :begin d)(reset! begindate d)))]
+          [:br]
+          [datepicker-dropdown
+            :model        enddate
+            :format        "dd.MM.yyyy"
+            :on-change     (fn [d] (do (swap! active-meeting assoc :end d)(reset! enddate d)))]
+          [:br]
+          [:button {:type :button
+                    :on-click #(do (re-frame/dispatch 
+                    [::events/update-meeting! @active-meeting])
+                    (re-frame/dispatch [::events/set-hash! ""]))}
+                "save"]]]))))
 
 ;; main
 
