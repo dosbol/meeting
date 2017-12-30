@@ -4,4 +4,4 @@ goog.require('cljs.core');
 goog.require('re_frisk.core');
 re_frisk.core.enable_re_frisk_BANG_.call(null);
 
-//# sourceMappingURL=preload.js.map?rel=1514366088345
+//# sourceMappingURL=preload.js.map?rel=1514660202778

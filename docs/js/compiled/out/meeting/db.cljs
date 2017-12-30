@@ -15,5 +15,4 @@
 (s/def ::db (s/keys :req-un [::meetings ::showing]))
 
 (def default-db
-  {:meetings (sorted-map)
-   :showing  :all})
+  {:meetings (sorted-map)})

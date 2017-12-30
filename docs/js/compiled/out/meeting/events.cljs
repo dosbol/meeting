@@ -56,3 +56,18 @@
  ::update-meeting!
  (fn [db [_ meeting]]
    (update-in db [:meetings (:active-meeting-id db)] merge meeting)))
+
+(re-frame/reg-event-db
+ ::filter!
+ (fn [db [_]]
+   (assoc db :showing :filter)))
+
+(re-frame/reg-event-db
+ ::reset-filter!
+ (fn [db [_]]
+   (dissoc db :filter-date)))
+
+(re-frame/reg-event-db
+ ::set-filter-date!
+ (fn [db [_ d]]
+   (assoc db :filter-date d)))

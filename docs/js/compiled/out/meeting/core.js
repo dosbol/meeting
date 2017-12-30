@@ -32,4 +32,4 @@ return meeting.core.mount_root.call(null);
 });
 goog.exportSymbol('meeting.core.init', meeting.core.init);
 
-//# sourceMappingURL=core.js.map?rel=1514378721214
+//# sourceMappingURL=core.js.map?rel=1514665968319
