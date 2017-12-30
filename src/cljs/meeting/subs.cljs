@@ -1,5 +1,6 @@
 (ns meeting.subs
-  (:require [re-frame.core :as re-frame]))
+  (:require [re-frame.core :as re-frame]
+            [cljs-time.core    :refer [within? after? before?]]))
 
 (re-frame/reg-sub
  ::active-panel
@@ -33,3 +34,23 @@
     (re-frame/subscribe [::meetings-raw])])
   (fn [[id meetings]]
     (get meetings id)))
+
+(re-frame/reg-sub
+  ::showing
+  (fn [db _]
+   (:showing db)))
+
+(re-frame/reg-sub
+  ::filter-date
+  (fn [db _]
+   (:filter-date db)))
+
+(re-frame/reg-sub
+  ::visible-meetings
+  (fn [_]
+    [(re-frame/subscribe [::meetings])
+    (re-frame/subscribe [::filter-date])])
+  (fn [[meetings d]]
+    (if (nil? d)
+        meetings 
+        (filter #(within? (:begin %) (:end %) d) meetings))))

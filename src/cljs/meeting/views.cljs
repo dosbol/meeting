@@ -3,7 +3,7 @@
             [reagent.core  :as reagent]
             [meeting.subs :as subs]
             [meeting.events :as events]
-            [re-com.core :refer [input-text single-dropdown datepicker-dropdown]]
+            [re-com.core :refer [input-text single-dropdown datepicker-dropdown button]]
             [cljs-time.core    :refer [now days minus plus day-of-week before?]]
             [cljs-time.coerce  :refer [to-local-date]]
             [cljs-time.format  :refer [formatter unparse]]))
@@ -36,26 +36,38 @@
 
 (defn meeting-table
   []
-  (let [meetings @(re-frame/subscribe [::subs/meetings])]
+  (let [meetings @(re-frame/subscribe [::subs/visible-meetings])]
+    (when (seq meetings)
         [:table
           [:thead
             [:tr [:th "ID"] [:th "Title"] [:th "Actions"]]]
           [:tbody
            (for [meeting  meetings]
-             ^{:key (:id meeting)} [meeting-row meeting])]]))
+             ^{:key (:id meeting)} [meeting-row meeting])]])))
 
 (defn home-panel []
+    (let [filter-date (reagent/atom nil)]
     [:div (str "Hello. This is the Home Page.")
      [:div [:a {:href "#/meetings/new"} "create meeting"]]
-     (when (seq @(re-frame/subscribe [::subs/meetings]))
-      [meeting-table])])
+     
+      [datepicker-dropdown
+        :model         filter-date
+        :format        "dd.MM.yyyy"
+        :on-change     (fn [d] (do
+                                    (re-frame/dispatch [::events/set-filter-date! d])
+                                    (reset! filter-date d)))]
+      [button
+        :label            "clear filter"
+        :on-click          #(do (reset! filter-date nil) (re-frame/dispatch [::events/reset-filter!]))]
+    ;  (when (seq @(re-frame/subscribe [::subs/visible-meetings]))
+      [meeting-table]]))
 
 ;; create
 
 (defn create-panel []
   (do 
     (reset! new-meeting skeleton)
-    (let [begindate (reagent/atom (now)) enddate (reagent/atom (now))]
+    (let [begindate (reagent/atom nil) enddate (reagent/atom nil)]
       [:div "This is the Meeting Page."
       [:div [:a {:href "#/"} "go to Home Page"]]
       [:form
