@@ -3,12 +3,12 @@
             [reagent.core  :as reagent]
             [meeting.subs :as subs]
             [meeting.events :as events]
-            [re-com.core :refer [input-text single-dropdown datepicker-dropdown button]]
+            [re-com.core :refer [input-text single-dropdown datepicker-dropdown button input-time]]
             [cljs-time.core    :refer [now days minus plus day-of-week before?]]
             [cljs-time.coerce  :refer [to-local-date]]
             [cljs-time.format  :refer [formatter unparse]]))
 
-(def skeleton {:title ""})
+(def skeleton {:title "" :begin-time 0 :end-time 0})
 (def timezones [{:id :moscow :label "Moscow"}
                 {:id :khabarovsk :label "Khabarovsk"}
                 {:id :greenwich :label "Greenwich"}])
@@ -59,7 +59,6 @@
       [button
         :label            "clear filter"
         :on-click          #(do (reset! filter-date nil) (re-frame/dispatch [::events/reset-filter!]))]
-    ;  (when (seq @(re-frame/subscribe [::subs/visible-meetings]))
       [meeting-table]]))
 
 ;; create
@@ -67,7 +66,10 @@
 (defn create-panel []
   (do 
     (reset! new-meeting skeleton)
-    (let [begindate (reagent/atom nil) enddate (reagent/atom nil)]
+    (let [begin-date (reagent/atom nil) 
+          end-date (reagent/atom nil)
+          begin-time  (reagent/atom 0)
+          end-time  (reagent/atom 0)]
       [:div "This is the Meeting Page."
       [:div [:a {:href "#/"} "go to Home Page"]]
       [:form
@@ -82,14 +84,22 @@
           :placeholder "choose timezone"]
         [:br]
         [datepicker-dropdown
-          :model        begindate
+          :model        begin-date
           :format        "dd.MM.yyyy"
-          :on-change     (fn [d] (do (swap! new-meeting assoc :begin d)(reset! begindate d)))]
+          :on-change     (fn [d] (do (swap! new-meeting assoc :begin-date d)(reset! begin-date d)))]
+        [input-time
+          :model        begin-time
+          :show-icon?   true
+          :on-change    (fn [t] (do (swap! new-meeting assoc :begin-time t)(reset! begin-time t)))]
         [:br]
         [datepicker-dropdown
-          :model        enddate
+          :model        end-date
           :format        "dd.MM.yyyy"
-          :on-change     (fn [d] (do (swap! new-meeting assoc :end d)(reset! enddate d)))]
+          :on-change     (fn [d] (do (swap! new-meeting assoc :end-date d)(reset! end-date d)))]
+        [input-time
+          :model        end-time
+          :show-icon?   true
+          :on-change    (fn [t] (do (swap! new-meeting assoc :end-time t)(reset! end-time t)))]
         [:br]
         [:button {:type :button
                   :on-click #(do (re-frame/dispatch 
@@ -105,10 +115,21 @@
     (let [meeting @(re-frame/subscribe [::subs/active-meeting])]
         [:table
           [:thead
-            [:tr [:th "ID"] [:th "Title"] [:th "timezone"] [:th "Begin"] [:th "End"]]]
+            [:tr [:th "ID"]
+            [:th "Title"]
+            [:th "timezone"]
+            [:th "Begin date"]
+            [:th "Begin time"]
+            [:th "End date"]
+            [:th "End time"]]]
           [:tbody
-            [:tr [:td (:id meeting)] [:td (:title meeting)] [:td (:timezone meeting)]
-                 [:td (.toString (or (:begin meeting) ""))] [:td (.toString (or (:end meeting) ""))]]]])])
+            [:tr [:td (:id meeting)]
+                 [:td (:title meeting)]
+                 [:td (:timezone meeting)]
+                 [:td (.toString (or (:begin-date meeting) ""))]
+                 [:td (:begin-time meeting)]
+                 [:td (.toString (or (:end-date meeting) ""))]
+                 [:td (:end-time meeting)]]]])])
 
 ;; edit panel
 
@@ -116,7 +137,10 @@
   (do
     (reset! active-meeting @(re-frame/subscribe [::subs/active-meeting]))
     (fn []
-      (let [begindate (reagent/atom (:begin @active-meeting)) enddate (reagent/atom (:end @active-meeting))]
+      (let [begin-date (reagent/atom (:begin-date @active-meeting)) 
+            end-date (reagent/atom (:end-date @active-meeting))
+            begin-time (reagent/atom (:begin-time @active-meeting))
+            end-time (reagent/atom (:end-time @active-meeting))]
         [:div "This is the edit Page."
         [:div [:a {:href "#/"} "go to Home Page"]]
         [:form
@@ -131,14 +155,22 @@
             :placeholder "choose timezone"]
           [:br]
           [datepicker-dropdown
-            :model        begindate
+            :model        begin-date
             :format        "dd.MM.yyyy"
-            :on-change     (fn [d] (do (swap! active-meeting assoc :begin d)(reset! begindate d)))]
+            :on-change     (fn [d] (do (swap! active-meeting assoc :begin-date d)(reset! begin-date d)))]
+          [input-time
+            :model        begin-time
+            :show-icon?   true
+            :on-change    (fn [t] (do (swap! active-meeting assoc :begin-time t)(reset! begin-time t)))]
           [:br]
           [datepicker-dropdown
-            :model        enddate
+            :model        end-date
             :format        "dd.MM.yyyy"
-            :on-change     (fn [d] (do (swap! active-meeting assoc :end d)(reset! enddate d)))]
+            :on-change     (fn [d] (do (swap! active-meeting assoc :end-date d)(reset! end-date d)))]
+          [input-time
+            :model        end-time
+            :show-icon?   true
+            :on-change    (fn [t] (do (swap! active-meeting assoc :end-time t)(reset! end-time t)))]
           [:br]
           [:button {:type :button
                     :on-click #(do (re-frame/dispatch 
