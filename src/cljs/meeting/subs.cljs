@@ -1,6 +1,6 @@
 (ns meeting.subs
   (:require [re-frame.core :as re-frame]
-            [cljs-time.core    :refer [within? after? before?]]))
+            [cljs-time.core    :refer [within? after? before? equal?]]))
 
 (re-frame/reg-sub
  ::active-panel
@@ -53,4 +53,4 @@
   (fn [[meetings d]]
     (if (nil? d)
         meetings 
-        (filter #(within? (:begin %) (:end %) d) meetings))))
+        (filter #(or (within? (:begin-date %) (:end-date %) d) (equal? (:end-date %) d)) meetings))))
