@@ -25,10 +25,10 @@ return goog.events.unlisten(window,goog.events.EventType.MOUSEMOVE,on_move);
 });
 });
 re_frisk.drag.mouse_down_handler = (function re_frisk$drag$mouse_down_handler(e){
-var map__44884 = re_frisk.drag.get_client_rect.call(null,e);
-var map__44884__$1 = ((((!((map__44884 == null)))?((((map__44884.cljs$lang$protocol_mask$partition0$ & (64))) || ((cljs.core.PROTOCOL_SENTINEL === map__44884.cljs$core$ISeq$)))?true:false):false))?cljs.core.apply.call(null,cljs.core.hash_map,map__44884):map__44884);
-var left = cljs.core.get.call(null,map__44884__$1,new cljs.core.Keyword(null,"left","left",-399115937));
-var top = cljs.core.get.call(null,map__44884__$1,new cljs.core.Keyword(null,"top","top",-1856271961));
+var map__44890 = re_frisk.drag.get_client_rect.call(null,e);
+var map__44890__$1 = ((((!((map__44890 == null)))?((((map__44890.cljs$lang$protocol_mask$partition0$ & (64))) || ((cljs.core.PROTOCOL_SENTINEL === map__44890.cljs$core$ISeq$)))?true:false):false))?cljs.core.apply.call(null,cljs.core.hash_map,map__44890):map__44890);
+var left = cljs.core.get.call(null,map__44890__$1,new cljs.core.Keyword(null,"left","left",-399115937));
+var top = cljs.core.get.call(null,map__44890__$1,new cljs.core.Keyword(null,"top","top",-1856271961));
 var offset = new cljs.core.PersistentArrayMap(null, 2, [new cljs.core.Keyword(null,"x","x",2099068185),(e.clientX - left),new cljs.core.Keyword(null,"y","y",-1757859776),(e.clientY - top)], null);
 var on_move = re_frisk.drag.mouse_move_handler.call(null,offset);
 goog.events.listen(window,goog.events.EventType.MOUSEMOVE,on_move);
@@ -36,4 +36,4 @@ goog.events.listen(window,goog.events.EventType.MOUSEMOVE,on_move);
 return goog.events.listen(window,goog.events.EventType.MOUSEUP,re_frisk.drag.mouse_up_handler.call(null,on_move));
 });
 
-//# sourceMappingURL=drag.js.map?rel=1515054965091
+//# sourceMappingURL=drag.js.map?rel=1515350545478

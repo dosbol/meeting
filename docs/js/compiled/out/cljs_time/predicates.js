@@ -25,9 +25,9 @@ cljs_time.predicates.sunday_QMARK_ = (function cljs_time$predicates$sunday_QMARK
 return cljs.core._EQ_.call(null,cljs_time.core.day_of_week.call(null,date_time),(7));
 });
 cljs_time.predicates.weekend_QMARK_ = (function cljs_time$predicates$weekend_QMARK_(date_time){
-var or__27195__auto__ = cljs_time.predicates.saturday_QMARK_.call(null,date_time);
-if(cljs.core.truth_(or__27195__auto__)){
-return or__27195__auto__;
+var or__27196__auto__ = cljs_time.predicates.saturday_QMARK_.call(null,date_time);
+if(cljs.core.truth_(or__27196__auto__)){
+return or__27196__auto__;
 } else {
 return cljs_time.predicates.sunday_QMARK_.call(null,date_time);
 }
@@ -84,4 +84,4 @@ cljs_time.predicates.same_date_QMARK_ = (function cljs_time$predicates$same_date
 return cljs.core._EQ_.call(null,cljs_time.coerce.to_local_date.call(null,this_date_time),cljs_time.coerce.to_local_date.call(null,that_date_time));
 });
 
-//# sourceMappingURL=predicates.js.map?rel=1515054941191
+//# sourceMappingURL=predicates.js.map?rel=1515350522171
