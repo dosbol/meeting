@@ -6,9 +6,9 @@
             [re-com.core :refer [input-text single-dropdown datepicker-dropdown button input-time]]
             [cljs-time.core    :refer [now days minus plus day-of-week before?]]
             [cljs-time.coerce  :refer [to-local-date]]
-            [cljs-time.format  :refer [formatter unparse]]))
+            [cljs-time.format  :refer [formatter unparse parse]]))
 
-(def skeleton {:title "" :begin-time 0 :end-time 0})
+(def skeleton {:title "" :status :planned})
 (def timezones [{:id :moscow :label "Moscow"}
                 {:id :khabarovsk :label "Khabarovsk"}
                 {:id :greenwich :label "Greenwich"}])
@@ -83,23 +83,32 @@
           :on-change   #(swap! new-meeting assoc :timezone %)
           :placeholder "choose timezone"]
         [:br]
-        [datepicker-dropdown
-          :model        begin-date
-          :format        "dd.MM.yyyy"
-          :on-change     (fn [d] (do (swap! new-meeting assoc :begin-date d)(reset! begin-date d)))]
-        [input-time
-          :model        begin-time
-          :show-icon?   true
-          :on-change    (fn [t] (do (swap! new-meeting assoc :begin-time t)(reset! begin-time t)))]
-        [:br]
-        [datepicker-dropdown
-          :model        end-date
-          :format        "dd.MM.yyyy"
-          :on-change     (fn [d] (do (swap! new-meeting assoc :end-date d)(reset! end-date d)))]
-        [input-time
-          :model        end-time
-          :show-icon?   true
-          :on-change    (fn [t] (do (swap! new-meeting assoc :end-time t)(reset! end-time t)))]
+        [input-text
+          :model        ""
+          :placeholder  "dd.MM.yyyy hh:mm A"
+          :change-on-blur? true
+          :on-change    #(swap! new-meeting assoc :start (parse (formatter "dd.MM.yyyy hh:mm A") %))]
+        ; [datepicker-dropdown
+        ;   :model        begin-date
+        ;   :format        "dd.MM.yyyy"
+        ;   :on-change     (fn [d] (do (swap! new-meeting assoc :begin-date d)(reset! begin-date d)))]
+        ; [input-time
+        ;   :model        begin-time
+        ;   :show-icon?   true
+        ;   :on-change    (fn [t] (do (swap! new-meeting assoc :begin-time t)(reset! begin-time t)))]
+        [input-text
+          :model        ""
+          :placeholder  "dd.MM.yyyy hh:mm A"
+          :change-on-blur? true
+          :on-change    #(swap! new-meeting assoc :end (parse (formatter "dd.MM.yyyy hh:mm A") %))]
+        ; [datepicker-dropdown
+        ;   :model        end-date
+        ;   :format        "dd.MM.yyyy"
+        ;   :on-change     (fn [d] (do (swap! new-meeting assoc :end-date d)(reset! end-date d)))]
+        ; [input-time
+        ;   :model        end-time
+        ;   :show-icon?   true
+        ;   :on-change    (fn [t] (do (swap! new-meeting assoc :end-time t)(reset! end-time t)))]
         [:br]
         [:button {:type :button
                   :on-click #(do (re-frame/dispatch 
@@ -118,18 +127,14 @@
             [:tr [:th "ID"]
             [:th "Title"]
             [:th "timezone"]
-            [:th "Begin date"]
-            [:th "Begin time"]
-            [:th "End date"]
-            [:th "End time"]]]
+            [:th "Begin"]
+            [:th "End"]]]
           [:tbody
             [:tr [:td (:id meeting)]
                  [:td (:title meeting)]
                  [:td (:timezone meeting)]
-                 [:td (.toString (or (:begin-date meeting) ""))]
-                 [:td (:begin-time meeting)]
-                 [:td (.toString (or (:end-date meeting) ""))]
-                 [:td (:end-time meeting)]]]])])
+                 [:td (unparse (formatter "dd.MM.yyyy hh:mm A") (:start meeting))]
+                 [:td (unparse (formatter "dd.MM.yyyy hh:mm A") (:end meeting))]]]])])
 
 ;; edit panel
 
@@ -137,10 +142,8 @@
   (do
     (reset! active-meeting @(re-frame/subscribe [::subs/active-meeting]))
     (fn []
-      (let [begin-date (reagent/atom (:begin-date @active-meeting)) 
-            end-date (reagent/atom (:end-date @active-meeting))
-            begin-time (reagent/atom (:begin-time @active-meeting))
-            end-time (reagent/atom (:end-time @active-meeting))]
+      (let [start (reagent/atom (unparse (formatter "dd.MM.yyyy hh:mm A") (:start @active-meeting)))
+            end (reagent/atom (unparse (formatter "dd.MM.yyyy hh:mm A") (:end @active-meeting)))]
         [:div "This is the edit Page."
         [:div [:a {:href "#/"} "go to Home Page"]]
         [:form
@@ -154,23 +157,32 @@
             :on-change   #(swap! active-meeting assoc :timezone %)
             :placeholder "choose timezone"]
           [:br]
-          [datepicker-dropdown
-            :model        begin-date
-            :format        "dd.MM.yyyy"
-            :on-change     (fn [d] (do (swap! active-meeting assoc :begin-date d)(reset! begin-date d)))]
-          [input-time
-            :model        begin-time
-            :show-icon?   true
-            :on-change    (fn [t] (do (swap! active-meeting assoc :begin-time t)(reset! begin-time t)))]
-          [:br]
-          [datepicker-dropdown
-            :model        end-date
-            :format        "dd.MM.yyyy"
-            :on-change     (fn [d] (do (swap! active-meeting assoc :end-date d)(reset! end-date d)))]
-          [input-time
-            :model        end-time
-            :show-icon?   true
-            :on-change    (fn [t] (do (swap! active-meeting assoc :end-time t)(reset! end-time t)))]
+          [input-text
+            :model        start
+            :placeholder  "dd.MM.yyyy hh:mm A"
+            :change-on-blur? true
+            :on-change    #(swap! active-meeting assoc :start (parse (formatter "dd.MM.yyyy hh:mm A") %))]
+          ; [datepicker-dropdown
+          ;   :model        begin-date
+          ;   :format        "dd.MM.yyyy"
+          ;   :on-change     (fn [d] (do (swap! active-meeting assoc :begin-date d)(reset! begin-date d)))]
+          ; [input-time
+          ;   :model        begin-time
+          ;   :show-icon?   true
+          ;   :on-change    (fn [t] (do (swap! active-meeting assoc :begin-time t)(reset! begin-time t)))]
+          [input-text
+            :model        end
+            :placeholder  "dd.MM.yyyy hh:mm A"
+            :change-on-blur? true
+            :on-change    #(swap! active-meeting assoc :end (parse (formatter "dd.MM.yyyy hh:mm A") %))]
+          ; [datepicker-dropdown
+          ;   :model        end-date
+          ;   :format        "dd.MM.yyyy"
+          ;   :on-change     (fn [d] (do (swap! active-meeting assoc :end-date d)(reset! end-date d)))]
+          ; [input-time
+          ;   :model        end-time
+          ;   :show-icon?   true
+          ;   :on-change    (fn [t] (do (swap! active-meeting assoc :end-time t)(reset! end-time t)))]
           [:br]
           [:button {:type :button
                     :on-click #(do (re-frame/dispatch 
