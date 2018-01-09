@@ -22,3 +22,11 @@
   (re-frame/dispatch-sync [::events/initialize-db])
   (dev-setup)
   (mount-root))
+
+(defn dispatch-timer-event []
+  (do 
+    (re-frame/dispatch [::events/timer-set-inprocess!])
+    (re-frame/dispatch [::events/timer-set-done!])
+    (re-frame/dispatch [::events/timer-set-now!])))
+
+(defonce do-timer (js/setInterval dispatch-timer-event 1000))

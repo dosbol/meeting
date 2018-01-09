@@ -20,17 +20,21 @@
 
 (defn meeting-row
   []
-  (fn [{:keys [id title]}]
+  (fn [{:keys [id title start status]}]
     [:tr 
       [:td id]
       [:td title]
+      [:td (unparse (formatter "dd.MM.yyyy hh:mm A") start)]
+      [:td status]
       [:td 
         [:a
           {:href (str "#/meetings/" id)} "view"]
         " | "
-        [:a
-          {:href (str "#/meetings/" id "/edit")} "edit"]
-        " | "
+        (if (= status :planned)
+          [:span 
+            [:a
+              {:href (str "#/meetings/" id "/edit")} "edit"]
+            " | "])
         [:a
           {:on-click #(re-frame/dispatch [::events/delete-meeting! id]) :href "#"} "delete"]]]))
 
@@ -40,7 +44,7 @@
     (when (seq meetings)
         [:table
           [:thead
-            [:tr [:th "ID"] [:th "Title"] [:th "Actions"]]]
+            [:tr [:th "ID"] [:th "Title"] [:th "Start"] [:th "Status"] [:th "Actions"]]]
           [:tbody
            (for [meeting  meetings]
              ^{:key (:id meeting)} [meeting-row meeting])]])))
