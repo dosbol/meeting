@@ -1,6 +1,7 @@
 (ns meeting.events
   (:require [re-frame.core :as re-frame]
-            [meeting.db :as db]))
+            [meeting.db :as db]
+            [cljs-time.core    :refer [now before?]]))
 
 ;;helper
 (defonce last-id (atom 0))
@@ -71,3 +72,28 @@
  ::set-filter-date!
  (fn [db [_ d]]
    (assoc db :filter-date d)))
+
+(re-frame/reg-event-db
+ ::timer-set-inprocess!
+ (fn [db [_]]
+    (->> (:meetings db)
+      (filter #(and (= (:status (second %)) :planned) (before? (:start (second %)) (now))))
+      (map #(hash-map (first %) (assoc (second %) :status :inprocess)))
+      (into {})
+      (merge (:meetings db))
+      (assoc db :meetings))))
+
+(re-frame/reg-event-db
+ ::timer-set-done!
+ (fn [db [_]]
+    (->> (:meetings db)
+      (filter #(and (= (:status (second %)) :inprocess) (before? (:end (second %)) (now))))
+      (map #(hash-map (first %) (assoc (second %) :status :done)))
+      (into {})
+      (merge (:meetings db))
+      (assoc db :meetings))))
+
+(re-frame/reg-event-db
+ ::timer-set-now!
+ (fn [db [_]]
+    (assoc db :now (now))))
