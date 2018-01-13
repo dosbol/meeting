@@ -1,5 +1,6 @@
 (ns meeting.db
-  (:require [cljs.spec.alpha :as s]))
+  (:require [cljs.spec.alpha :as s]
+            [cljs-time.core  :refer [minutes from-now]]))
 
 (s/def ::id int?)
 (s/def ::title string?)
@@ -15,4 +16,17 @@
 (s/def ::db (s/keys :req-un [::meetings ::showing]))
 
 (def default-db
-  {:meetings (sorted-map)})
+  {:meetings {1
+                {:title "meeting with mr. X"
+                :status :planned
+                :timezone :greenwich
+                :start (-> 1 minutes from-now)
+                :end  (-> 2 minutes from-now)
+                :id 1}
+              2
+                {:title "meeting with mr. Y"
+                :status :planned
+                :timezone :greenwich
+                :start  (-> 2 minutes from-now)
+                :end  (-> 3 minutes from-now)
+                :id 2}}})

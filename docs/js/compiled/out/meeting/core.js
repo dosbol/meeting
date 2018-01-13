@@ -43,4 +43,4 @@ if(typeof meeting.core.do_timer !== 'undefined'){
 meeting.core.do_timer = setInterval(meeting.core.dispatch_timer_event,(1000));
 }
 
-//# sourceMappingURL=core.js.map?rel=1515496949103
+//# sourceMappingURL=core.js.map?rel=1515861714195
