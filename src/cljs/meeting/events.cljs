@@ -74,24 +74,17 @@
    (assoc db :filter-date d)))
 
 (re-frame/reg-event-db
- ::timer-set-inprocess!
+ ::timer-manage-status!
  (fn [db [_]]
-    (->> (:meetings db)
-      (filter #(and (= (:status (second %)) :planned) (before? (:start (second %)) (now))))
-      (map #(hash-map (first %) (assoc (second %) :status :inprocess)))
-      (into {})
-      (merge (:meetings db))
-      (assoc db :meetings))))
-
-(re-frame/reg-event-db
- ::timer-set-done!
- (fn [db [_]]
-    (->> (:meetings db)
-      (filter #(and (= (:status (second %)) :inprocess) (before? (:end (second %)) (now))))
-      (map #(hash-map (first %) (assoc (second %) :status :done)))
-      (into {})
-      (merge (:meetings db))
-      (assoc db :meetings))))
+    (let [started  (->> (:meetings db)
+                        (filter #(and (= (:status (second %)) :planned) (before? (:start (second %)) (now))))
+                        (map #(hash-map (first %) (assoc (second %) :status :inprocess)))
+                        (into {}))
+          done     (->> (merge (:meetings db) started)
+                        (filter #(and (= (:status (second %)) :inprocess) (before? (:end (second %)) (now))))
+                        (map #(hash-map (first %) (assoc (second %) :status :done)))
+                        (into {}))]
+      (assoc db :meetings (merge (:meetings db) started done)))))
 
 (re-frame/reg-event-db
  ::timer-set-now!
