@@ -4,7 +4,7 @@
             [cljs-time.core    :refer [now before?]]))
 
 ;;helper
-(defonce last-id (atom 0))
+(defonce last-id (atom 2))
 
 (re-frame/reg-cofx
   :meeting-id
