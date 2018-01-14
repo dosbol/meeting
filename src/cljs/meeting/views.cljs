@@ -52,7 +52,7 @@
 (defn home-panel []
     (let [filter-date (reagent/atom nil)]
     [:div (str "Hello. This is the Home Page.")
-     [:div [:a {:href "#/meetings/new"} "create meeting"]]
+     [:div [:a {:href "#/meetings/new" :on-click #(reset! new-meeting skeleton)} "create meeting"]]
      
       [datepicker-dropdown
         :model         filter-date
@@ -69,13 +69,14 @@
 
 (defn create-panel []
   (do 
-    (reset! new-meeting skeleton)
+    #_(reset! new-meeting skeleton)
     (let [begin-date (reagent/atom nil) 
           end-date (reagent/atom nil)
           begin-time  (reagent/atom 0)
           end-time  (reagent/atom 0)]
       [:div "This is the Meeting Page."
       [:div [:a {:href "#/"} "go to Home Page"]]
+      [:div {:style {:color :red}} @(re-frame/subscribe [::subs/error])]
       [:form
         [input-text
           :model        ""
@@ -92,32 +93,16 @@
           :placeholder  "dd.MM.yyyy hh:mm A"
           :change-on-blur? true
           :on-change    #(swap! new-meeting assoc :start (parse (formatter "dd.MM.yyyy hh:mm A") %))]
-        ; [datepicker-dropdown
-        ;   :model        begin-date
-        ;   :format        "dd.MM.yyyy"
-        ;   :on-change     (fn [d] (do (swap! new-meeting assoc :begin-date d)(reset! begin-date d)))]
-        ; [input-time
-        ;   :model        begin-time
-        ;   :show-icon?   true
-        ;   :on-change    (fn [t] (do (swap! new-meeting assoc :begin-time t)(reset! begin-time t)))]
         [input-text
           :model        ""
           :placeholder  "dd.MM.yyyy hh:mm A"
           :change-on-blur? true
           :on-change    #(swap! new-meeting assoc :end (parse (formatter "dd.MM.yyyy hh:mm A") %))]
-        ; [datepicker-dropdown
-        ;   :model        end-date
-        ;   :format        "dd.MM.yyyy"
-        ;   :on-change     (fn [d] (do (swap! new-meeting assoc :end-date d)(reset! end-date d)))]
-        ; [input-time
-        ;   :model        end-time
-        ;   :show-icon?   true
-        ;   :on-change    (fn [t] (do (swap! new-meeting assoc :end-time t)(reset! end-time t)))]
         [:br]
         [:button {:type :button
                   :on-click #(do (re-frame/dispatch 
                     [::events/create-meeting! @new-meeting])
-                    (re-frame/dispatch [::events/set-hash! ""]))}
+                    #_(re-frame/dispatch [::events/set-hash! ""]))}
                 "create meeting"]]])))
 
 ;; view panel
