@@ -57,3 +57,8 @@
                      (equal? (ct/date-time (ct/year (:start %))
                                             (ct/month (:start %))
                                             (ct/day (:start %))) d)) meetings))))
+
+(re-frame/reg-sub
+  ::error
+  (fn [db _]
+   (:error db)))

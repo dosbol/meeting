@@ -25,8 +25,7 @@
 
 (defn dispatch-timer-event []
   (do 
-    (re-frame/dispatch [::events/timer-set-inprocess!])
-    (re-frame/dispatch [::events/timer-set-done!])
+    (re-frame/dispatch [::events/timer-manage-status!])
     (re-frame/dispatch [::events/timer-set-now!])))
 
 (defonce do-timer (js/setInterval dispatch-timer-event 1000))

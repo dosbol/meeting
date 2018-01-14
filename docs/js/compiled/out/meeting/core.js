@@ -32,9 +32,7 @@ return meeting.core.mount_root.call(null);
 });
 goog.exportSymbol('meeting.core.init', meeting.core.init);
 meeting.core.dispatch_timer_event = (function meeting$core$dispatch_timer_event(){
-re_frame.core.dispatch.call(null,new cljs.core.PersistentVector(null, 1, 5, cljs.core.PersistentVector.EMPTY_NODE, [new cljs.core.Keyword("meeting.events","timer-set-inprocess!","meeting.events/timer-set-inprocess!",1182894788)], null));
-
-re_frame.core.dispatch.call(null,new cljs.core.PersistentVector(null, 1, 5, cljs.core.PersistentVector.EMPTY_NODE, [new cljs.core.Keyword("meeting.events","timer-set-done!","meeting.events/timer-set-done!",169803683)], null));
+re_frame.core.dispatch.call(null,new cljs.core.PersistentVector(null, 1, 5, cljs.core.PersistentVector.EMPTY_NODE, [new cljs.core.Keyword("meeting.events","timer-manage-status!","meeting.events/timer-manage-status!",-1826807801)], null));
 
 return re_frame.core.dispatch.call(null,new cljs.core.PersistentVector(null, 1, 5, cljs.core.PersistentVector.EMPTY_NODE, [new cljs.core.Keyword("meeting.events","timer-set-now!","meeting.events/timer-set-now!",195627536)], null));
 });
@@ -43,4 +41,4 @@ if(typeof meeting.core.do_timer !== 'undefined'){
 meeting.core.do_timer = setInterval(meeting.core.dispatch_timer_event,(1000));
 }
 
-//# sourceMappingURL=core.js.map?rel=1515861714195
+//# sourceMappingURL=core.js.map?rel=1515960378646

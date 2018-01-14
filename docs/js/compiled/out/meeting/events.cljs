@@ -1,7 +1,8 @@
 (ns meeting.events
   (:require [re-frame.core :as re-frame]
             [meeting.db :as db]
-            [cljs-time.core    :refer [now before?]]))
+            [cljs-time.core    :refer [now before?]]
+            [clojure.string :as string]))
 
 ;;helper
 (defonce last-id (atom 2))
@@ -10,6 +11,16 @@
   :meeting-id
   (fn [cofx _]
     (assoc cofx :meeting-id (swap! last-id inc))))
+
+;;validation interceptors
+(def blank-title?
+  (re-frame.core/->interceptor
+    :id      :blank-title?
+    :before  (fn [context]
+               (let [{db :db [event {title :title}] :event} (:coeffects context)]
+                 (if (string/blank? title)
+                     (assoc-in context [:coeffects :error] "Title required")
+                     context)))))
 
 ;;init
 (re-frame/reg-event-db
@@ -39,9 +50,14 @@
 
 (re-frame/reg-event-fx
  ::create-meeting!
- [(re-frame/inject-cofx :meeting-id)]
- (fn [cofx [_ new-meeting]]      
-   {:db (update-in (:db cofx) [:meetings] conj {(:meeting-id cofx) (conj new-meeting {:id (:meeting-id cofx)})})}))
+ [(re-frame/inject-cofx :meeting-id)
+  blank-title?]
+ (fn [cofx [_ new-meeting]]
+    (if-not (:error cofx)      
+            {:db (update-in (dissoc (:db cofx) :error) [:meetings] conj 
+              {(:meeting-id cofx) (conj new-meeting {:id (:meeting-id cofx)})})
+             :change-loc ""}
+            {:db (assoc (:db cofx) :error (:error cofx))})))
 
 (re-frame/reg-event-fx 
  ::set-hash!
@@ -74,24 +90,17 @@
    (assoc db :filter-date d)))
 
 (re-frame/reg-event-db
- ::timer-set-inprocess!
+ ::timer-manage-status!
  (fn [db [_]]
-    (->> (:meetings db)
-      (filter #(and (= (:status (second %)) :planned) (before? (:start (second %)) (now))))
-      (map #(hash-map (first %) (assoc (second %) :status :inprocess)))
-      (into {})
-      (merge (:meetings db))
-      (assoc db :meetings))))
-
-(re-frame/reg-event-db
- ::timer-set-done!
- (fn [db [_]]
-    (->> (:meetings db)
-      (filter #(and (= (:status (second %)) :inprocess) (before? (:end (second %)) (now))))
-      (map #(hash-map (first %) (assoc (second %) :status :done)))
-      (into {})
-      (merge (:meetings db))
-      (assoc db :meetings))))
+    (let [started  (->> (:meetings db)
+                        (filter #(and (= (:status (second %)) :planned) (before? (:start (second %)) (now))))
+                        (map #(hash-map (first %) (assoc (second %) :status :inprocess)))
+                        (into {}))
+          done     (->> (merge (:meetings db) started)
+                        (filter #(and (= (:status (second %)) :inprocess) (before? (:end (second %)) (now))))
+                        (map #(hash-map (first %) (assoc (second %) :status :done)))
+                        (into {}))]
+      (assoc db :meetings (merge (:meetings db) started done)))))
 
 (re-frame/reg-event-db
  ::timer-set-now!
