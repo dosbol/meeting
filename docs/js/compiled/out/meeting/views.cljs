@@ -68,42 +68,36 @@
 ;; create
 
 (defn create-panel []
-  (do 
-    #_(reset! new-meeting skeleton)
-    (let [begin-date (reagent/atom nil) 
-          end-date (reagent/atom nil)
-          begin-time  (reagent/atom 0)
-          end-time  (reagent/atom 0)]
-      [:div "This is the Meeting Page."
-      [:div [:a {:href "#/"} "go to Home Page"]]
-      [:div {:style {:color :red}} @(re-frame/subscribe [::subs/error])]
-      [:form
-        [input-text
-          :model        ""
-          :placeholder  "title"
-          :on-change    #(swap! new-meeting assoc :title %)]
-        [single-dropdown
-          :choices     timezones
-          :model       nil
-          :on-change   #(swap! new-meeting assoc :timezone %)
-          :placeholder "choose timezone"]
-        [:br]
-        [input-text
-          :model        ""
-          :placeholder  "dd.MM.yyyy hh:mm A"
-          :change-on-blur? true
-          :on-change    #(swap! new-meeting assoc :start (parse (formatter "dd.MM.yyyy hh:mm A") %))]
-        [input-text
-          :model        ""
-          :placeholder  "dd.MM.yyyy hh:mm A"
-          :change-on-blur? true
-          :on-change    #(swap! new-meeting assoc :end (parse (formatter "dd.MM.yyyy hh:mm A") %))]
-        [:br]
-        [:button {:type :button
-                  :on-click #(do (re-frame/dispatch 
-                    [::events/create-meeting! @new-meeting])
-                    #_(re-frame/dispatch [::events/set-hash! ""]))}
-                "create meeting"]]])))
+  [:div "This is the Meeting Page."
+  [:div [:a {:href "#/"} "go to Home Page"]]
+  [:div {:style {:color :red}} @(re-frame/subscribe [::subs/error])]
+  [:form
+    [input-text
+      :model        ""
+      :placeholder  "title"
+      :on-change    #(swap! new-meeting assoc :title %)]
+    [single-dropdown
+      :choices     timezones
+      :model       nil
+      :on-change   #(swap! new-meeting assoc :timezone %)
+      :placeholder "choose timezone"]
+    [:br]
+    [input-text
+      :model        ""
+      :placeholder  "dd.MM.yyyy hh:mm A"
+      :change-on-blur? true
+      :on-change    #(swap! new-meeting assoc :start %)]
+    [input-text
+      :model        ""
+      :placeholder  "dd.MM.yyyy hh:mm A"
+      :change-on-blur? true
+      :on-change    #(swap! new-meeting assoc :end %)]
+    [:br]
+    [:button {:type :button
+              :on-click #(do (re-frame/dispatch 
+                [::events/create-meeting! @new-meeting])
+                #_(re-frame/dispatch [::events/set-hash! ""]))}
+            "create meeting"]]])
 
 ;; view panel
 
