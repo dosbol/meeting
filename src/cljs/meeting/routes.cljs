@@ -23,7 +23,8 @@
   (defroute "/" []
     (do
       (re-frame/dispatch [::events/set-active-panel :home-panel])
-      (re-frame/dispatch [::events/unset-active-meeting-id])))
+      (re-frame/dispatch [::events/unset-active-meeting-id])
+      (re-frame/dispatch [::events/unset-error!])))
 
   (defroute "/meetings/new" []
     (re-frame/dispatch [::events/set-active-panel :create-panel]))
