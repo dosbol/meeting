@@ -1,7 +1,7 @@
 (ns meeting.events
   (:require [re-frame.core :as re-frame]
             [meeting.db :as db]
-            [cljs-time.core    :refer [now before? date?]]
+            [cljs-time.core    :refer [now before? date? overlaps?]]
             [clojure.string :as string]
             [cljs-time.format  :refer [formatter unparse parse]]))
 
@@ -86,6 +86,38 @@
                             (assoc-in context [:coeffects :error] "End date-time is not valid")))
                      context)))))
 
+(def past-time-start?
+  (re-frame.core/->interceptor
+    :id      :past-time-start?
+    :before  (fn [context]
+               (let [{db :db [event {start :start}] :event error :error} (:coeffects context)]
+                 (if (and (not error)
+                          (before? (parse datetime-formatter start) (now)))
+                            (assoc-in context [:coeffects :error] "Start date-time could not be in past")
+                     context)))))
+
+(def end-before-start?
+  (re-frame.core/->interceptor
+    :id      :end-before-start?
+    :before  (fn [context]
+               (let [{db :db [event {start :start end :end}] :event error :error} (:coeffects context)]
+                 (if (and (not error)
+                          (before? (parse datetime-formatter end) (parse datetime-formatter start)))
+                            (assoc-in context [:coeffects :error] "End date-time could not be before start date-time")
+                     context)))))
+
+(def meeting-overlaps?
+  (re-frame.core/->interceptor
+    :id      :meeting-overlaps?
+    :before  (fn [context]
+               (let [{db :db [event {start :start end :end}] :event error :error} (:coeffects context)]
+                 (if (and (not error)
+                          (< 0 (count (filter #(overlaps? (:start %) (:end %)
+                                                     (parse datetime-formatter start)
+                                                     (parse datetime-formatter end)) (vals (:meetings db))))))
+                            (assoc-in context [:coeffects :error] "Meeting overlaps with existing meetings")
+                     context)))))
+
 ;;init
 (re-frame/reg-event-db
  ::initialize-db
@@ -119,10 +151,13 @@
   blank-start?
   invalid-format-start?
   invalid-date-start?
+  past-time-start?
   blank-end?
   invalid-format-end?
   invalid-date-end?
-  
+  end-before-start?
+  meeting-overlaps?
+
   (re-frame/inject-cofx :meeting-id)]
 
  (fn [cofx [_ new-meeting]]
