@@ -21,77 +21,70 @@
 (defn filter-queue [f q] (apply conj #queue[] (vec (filter f q))))
 (defn not-in? [coll elem] (not (contains? (set coll) elem)))
 (defn not-in-validation-interceptors? [elem] (not-in? validation-interceptors elem))
+
+
+;;validation interceptors helpers
+
+(defn blank-interceptor-before [key]
+  (fn [context]
+    (let [{[_ {field key}] :event} (:coeffects context)]
+      (if (string/blank? field)
+          (update-in (assoc-in context [:coeffects :error] (str (name key) " required"))     ;; assoc error message
+                    [:queue] #(filter-queue not-in-validation-interceptors? %))              ;; skip other validation-interceptors
+          context))))
+
+(defn inv-format-interceptor-before [key]
+  (fn [context]
+    (let [{[_ {field key}] :event} (:coeffects context)]
+      (if (not (re-matches #"\d{2}\.\d{2}\.\d{4}\s+\d{2}:\d{2}\s+(AM|PM)" field))
+          (update-in (assoc-in context [:coeffects :error] (str (name key) " date-time format is invalid(should be dd.MM.yyyy hh:mm AM)"))
+                    [:queue] #(filter-queue not-in-validation-interceptors? %))
+          context))))
+
+(defn inv-date-interceptor-before [key]
+  (fn [context]
+    (let [{[_ {field key}] :event} (:coeffects context)]
+      (try (do (parse datetime-formatter field) context)
+                    (catch :default e 
+                      (update-in (assoc-in context [:coeffects :error] (str (name key) " date-time is not valid"))
+                                  [:queue] #(filter-queue not-in-validation-interceptors? %)))))))      
+
 ;;validation interceptors
 
 (def blank-title?
   (re-frame.core/->interceptor
     :id      :blank-title?
-    :before  (fn [context]
-               (let [{db :db [event {title :title}] :event} (:coeffects context)]
-                 (if (string/blank? title)
-                     (update-in (assoc-in context [:coeffects :error] "Title required")       ;; assoc error message
-                                [:queue] #(filter-queue not-in-validation-interceptors? %))   ;; skip other validation-interceptors          
-                     context)))))
+    :before  (blank-interceptor-before :title)))
 
 (def blank-start?
   (re-frame.core/->interceptor
     :id      :blank-start?
-    :before  (fn [context]
-               (let [{db :db [event {start :start}] :event error :error} (:coeffects context)]
-                 (if (string/blank? start)
-                     (update-in (assoc-in context [:coeffects :error] "Start date-time required")
-                                [:queue] #(filter-queue not-in-validation-interceptors? %))
-                     context)))))
+    :before  (blank-interceptor-before :start)))
 
 (def blank-end?
   (re-frame.core/->interceptor
     :id      :blank-end?
-    :before  (fn [context]
-               (let [{db :db [event {end :end}] :event error :error} (:coeffects context)]
-                 (if (string/blank? end)
-                     (update-in (assoc-in context [:coeffects :error] "End date-time required")
-                                [:queue] #(filter-queue not-in-validation-interceptors? %))
-                     context)))))
+    :before  (blank-interceptor-before :end)))
 
 (def invalid-format-start?
   (re-frame.core/->interceptor
     :id      :invalid-format-start?
-    :before  (fn [context]
-               (let [{db :db [event {start :start}] :event error :error} (:coeffects context)]
-                 (if (not (re-matches #"\d{2}\.\d{2}\.\d{4}\s+\d{2}:\d{2}\s+(AM|PM)" start))
-                     (update-in (assoc-in context [:coeffects :error] "Start date-time format is invalid(should be dd.MM.yyyy hh:mm AM)")
-                                [:queue] #(filter-queue not-in-validation-interceptors? %))
-                     context)))))
+    :before  (inv-format-interceptor-before :start)))
 
 (def invalid-format-end?
   (re-frame.core/->interceptor
     :id      :invalid-format-end?
-    :before  (fn [context]
-               (let [{db :db [event {end :end}] :event error :error} (:coeffects context)]
-                 (if (not (re-matches #"\d{2}\.\d{2}\.\d{4}\s+\d{2}:\d{2}\s+(AM|PM)" end))
-                     (update-in (assoc-in context [:coeffects :error] "End date-time format is invalid(should be dd.MM.yyyy hh:mm AM)")
-                                [:queue] #(filter-queue not-in-validation-interceptors? %))
-                     context)))))
+    :before  (inv-format-interceptor-before :end)))
 
 (def invalid-date-start?
   (re-frame.core/->interceptor
     :id      :invalid-date-start?
-    :before  (fn [context]
-               (let [{db :db [event {start :start}] :event error :error} (:coeffects context)]
-                 (try (do (parse datetime-formatter start) context)
-                    (catch :default e 
-                      (update-in (assoc-in context [:coeffects :error] "Start date-time is not valid")
-                                  [:queue] #(filter-queue not-in-validation-interceptors? %))))))))
+    :before  (inv-date-interceptor-before :start)))
 
 (def invalid-date-end?
   (re-frame.core/->interceptor
     :id      :invalid-date-end?
-    :before  (fn [context]
-               (let [{db :db [event {end :end}] :event error :error} (:coeffects context)]
-                 (try (do (parse datetime-formatter end) context)
-                    (catch :default e 
-                      (update-in (assoc-in context [:coeffects :error] "End date-time is not valid")
-                                  [:queue] #(filter-queue not-in-validation-interceptors? %))))))))
+    :before  (inv-date-interceptor-before :end)))
 
 (def past-time-start?
   (re-frame.core/->interceptor
