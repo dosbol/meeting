@@ -117,10 +117,12 @@
   (re-frame.core/->interceptor
     :id      :meeting-overlaps?
     :before  (fn [context]
-               (let [{db :db [event {start :start end :end}] :event error :error} (:coeffects context)]
-                 (if (seq (filter #(overlaps? (:start %) (:end %)
+               (let [{db :db [event {start :start end :end id :id}] :event error :error} (:coeffects context)]
+                 (if (seq (filter #(and (overlaps? (:start %) (:end %)
                                                      (parse datetime-formatter start)
-                                                     (parse datetime-formatter end)) (vals (:meetings db))))
+                                                     (parse datetime-formatter end))
+                                        (not= id (:id %)))
+                              (vals (:meetings db))))
                     (assoc-in context [:coeffects :error] "Meeting overlaps with existing meetings")
                      context)))))
 
@@ -188,10 +190,19 @@
   (fn [location]
     (set! (.-hash js/window.location) location)))
 
-(re-frame/reg-event-db
+(re-frame/reg-event-fx
  ::update-meeting!
- (fn [db [_ meeting]]
-   (update-in db [:meetings (:active-meeting-id db)] merge meeting)))
+
+ [validation-interceptors]
+
+ (fn [cofx [_ meeting]]
+    (if-not (:error cofx)      
+            {:db (update-in (dissoc (:db cofx) :error) [:meetings (:active-meeting-id (:db cofx))] 
+                  merge 
+                  (merge meeting {:start (parse datetime-formatter (:start meeting))
+                                  :end (parse datetime-formatter (:end meeting))}))
+             :change-loc ""}
+            {:db (assoc (:db cofx) :error (:error cofx))})))
 
 (re-frame/reg-event-db
  ::filter!
