@@ -1,7 +1,6 @@
 (ns meeting.db
   (:require [cljs.spec.alpha :as s]
-            [cljs-time.core  :refer [minutes from-now]]
-            [cljs-time.format  :refer [formatter unparse parse]]))
+            [cljs-time.core  :refer [minutes from-now floor minute]]))
 
 (s/def ::id int?)
 (s/def ::title string?)
@@ -16,20 +15,18 @@
 (s/def ::showing #{:all :filter})
 (s/def ::db (s/keys :req-un [::meetings ::showing]))
 
-(def datetime-formatter (formatter "dd.MM.yyyy hh:mm A"))
-
 (def default-db
   {:meetings {1
                 {:title "meeting with mr. X"
                 :status :planned
                 :timezone :greenwich
-                :start (parse datetime-formatter (unparse datetime-formatter (-> 2 minutes from-now)))
-                :end  (parse datetime-formatter (unparse datetime-formatter (-> 3 minutes from-now)))
+                :start (floor (-> 2 minutes from-now) minute)
+                :end (floor (-> 3 minutes from-now) minute)
                 :id 1}
               2
                 {:title "meeting with mr. Y"
                 :status :planned
                 :timezone :greenwich
-                :start  (parse datetime-formatter (unparse datetime-formatter (-> 4 minutes from-now)))
-                :end  (parse datetime-formatter (unparse datetime-formatter (-> 5 minutes from-now)))
+                :start (floor (-> 4 minutes from-now) minute)
+                :end (floor (-> 5 minutes from-now) minute)
                 :id 2}}})
