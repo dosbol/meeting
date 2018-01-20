@@ -1,7 +1,7 @@
 (ns meeting.events
   (:require [re-frame.core :as re-frame]
             [meeting.db :as db]
-            [cljs-time.core    :refer [now before? date? overlaps?]]
+            [cljs-time.core    :refer [now before? date? overlaps? minus hours]]
             [clojure.string :as string]
             [cljs-time.format  :refer [formatter unparse parse]]))
 
@@ -49,12 +49,22 @@
                       (update-in (assoc-in context [:coeffects :error] (str (name key) " date-time is not valid"))
                                   [:queue] #(filter-queue not-in-validation-interceptors? %)))))))
 
+(defn time-to-utc! [key]
+  (fn [context]
+    (let [{[_ {field key timezone :timezone}] :event} (:coeffects context)]    
+      (assoc-in context [:coeffects :event 1 key] (minus field (hours (:diff timezone)))))))
+
 ;;validation interceptors
 
 (def blank-title?
   (re-frame.core/->interceptor
     :id      :blank-title?
     :before  (blank-interceptor-before :title)))
+
+(def blank-timezone?
+  (re-frame.core/->interceptor
+    :id      :blank-timezone?
+    :before  (blank-interceptor-before :timezone)))
 
 (def blank-start?
   (re-frame.core/->interceptor
@@ -85,6 +95,16 @@
   (re-frame.core/->interceptor
     :id      :invalid-date-end?
     :before  (inv-date-interceptor-before :end)))
+
+(def time-to-utc-start!
+  (re-frame.core/->interceptor
+    :id      :time-to-utc-start!
+    :before  (time-to-utc! :start)))
+
+(def time-to-utc-end!
+  (re-frame.core/->interceptor
+    :id      :time-to-utc-start!
+    :before  (time-to-utc! :end)))
 
 (def past-time-start?
   (re-frame.core/->interceptor
@@ -121,13 +141,16 @@
 
 (def validation-interceptors 
   [ blank-title?
+    blank-timezone?
     blank-start?
     invalid-format-start?
     invalid-date-start?
+    time-to-utc-start!
     past-time-start?
     blank-end?
     invalid-format-end?
     invalid-date-end?
+    time-to-utc-end!
     end-before-start?
     meeting-overlaps?])
 

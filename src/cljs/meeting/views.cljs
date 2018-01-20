@@ -4,14 +4,14 @@
             [meeting.subs :as subs]
             [meeting.events :as events]
             [re-com.core :refer [input-text single-dropdown datepicker-dropdown button input-time]]
-            [cljs-time.core    :refer [now days minus plus day-of-week before?]]
+            [cljs-time.core    :refer [now days minus plus day-of-week before? hours]]
             [cljs-time.coerce  :refer [to-local-date]]
             [cljs-time.format  :refer [formatter unparse parse]]))
 
 (def skeleton {:title "" :status :planned})
-(def timezones [{:id :moscow :label "Moscow"}
-                {:id :khabarovsk :label "Khabarovsk"}
-                {:id :greenwich :label "Greenwich"}])
+(def timezones [{:id :moscow :label "Moscow" :diff 3}
+                {:id :khabarovsk :label "Khabarovsk" :diff 10}
+                {:id :greenwich :label "Greenwich" :diff 0}])
 
 (defonce new-meeting (reagent/atom skeleton))
 (defonce active-meeting (reagent/atom skeleton))
@@ -36,8 +36,10 @@
           [:span 
             [:a
               {:href (str "#/meetings/" id "/edit") 
-               :on-click #(reset! active-meeting (merge meeting {:start (unparse datetime-formatter (:start meeting))
-                                                                 :end (unparse datetime-formatter (:end meeting))}))}
+               :on-click #(reset! active-meeting (merge meeting {:start (unparse datetime-formatter 
+                                                                          (plus (:start meeting) (hours (:diff (:timezone meeting)))))
+                                                                 :end (unparse datetime-formatter 
+                                                                          (plus (:end meeting) (hours (:diff (:timezone meeting)))))}))}
               "edit"]
             " | "])
         [:a
@@ -84,7 +86,7 @@
     [single-dropdown
       :choices     timezones
       :model       nil
-      :on-change   #(swap! new-meeting assoc :timezone %)
+      :on-change   (fn [id] (swap! new-meeting assoc :timezone (some #(if (= id (:id %)) %) timezones)))
       :placeholder "choose timezone"]
     [:br]
     [input-text
@@ -118,7 +120,7 @@
           [:tbody
             [:tr [:td (:id meeting)]
                  [:td (:title meeting)]
-                 [:td (:timezone meeting)]
+                 [:td (:label (:timezone meeting))]
                  [:td (unparse datetime-formatter (:start meeting))]
                  [:td (unparse datetime-formatter (:end meeting))]]]])])
 
@@ -136,8 +138,8 @@
         :on-change    #(swap! active-meeting assoc :title %)]
       [single-dropdown
         :choices     timezones
-        :model       (:timezone @active-meeting)
-        :on-change   #(swap! active-meeting assoc :timezone %)
+        :model       (:id (:timezone @active-meeting))
+        :on-change   (fn [id] (swap! active-meeting assoc :timezone (some #(if (= id (:id %)) %) timezones)))
         :placeholder "choose timezone"]
       [:br]
       [input-text

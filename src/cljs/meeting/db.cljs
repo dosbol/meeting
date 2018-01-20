@@ -19,14 +19,14 @@
   {:meetings {1
                 {:title "meeting with mr. X"
                 :status :planned
-                :timezone :greenwich
+                :timezone {:id :greenwich :label "Greenwich" :diff 0}
                 :start (floor (-> 2 minutes from-now) minute)
                 :end (floor (-> 3 minutes from-now) minute)
                 :id 1}
               2
                 {:title "meeting with mr. Y"
                 :status :planned
-                :timezone :greenwich
+                :timezone {:id :greenwich :label "Greenwich" :diff 0}
                 :start (floor (-> 4 minutes from-now) minute)
                 :end (floor (-> 5 minutes from-now) minute)
                 :id 2}}})
