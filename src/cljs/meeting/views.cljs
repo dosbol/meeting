@@ -4,7 +4,7 @@
             [meeting.subs :as subs]
             [meeting.events :as events]
             [re-com.core :refer [input-text single-dropdown datepicker-dropdown button input-time]]
-            [cljs-time.core    :refer [now days minus plus day-of-week before? hours]]
+            [cljs-time.core    :refer [now days minus plus day-of-week before? hours local-date-time]]
             [cljs-time.coerce  :refer [to-local-date]]
             [cljs-time.format  :refer [formatter unparse parse]]))
 
@@ -26,7 +26,7 @@
     [:tr 
       [:td id]
       [:td title]
-      [:td (unparse datetime-formatter start)]
+      [:td (unparse datetime-formatter (local-date-time start))]
       [:td status]
       [:td 
         [:a
