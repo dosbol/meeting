@@ -1,6 +1,6 @@
 (ns meeting.subs
   (:require [re-frame.core :as re-frame]
-            [cljs-time.core    :refer [within? after? before? equal? plus hours] :as ct]))
+            [cljs-time.core    :refer [within? after? before? equal? plus hours local-date-time] :as ct]))
 
 (re-frame/reg-sub
  ::active-panel
@@ -57,11 +57,15 @@
     (re-frame/subscribe [::filter-date])])
   (fn [[meetings d]]
     (if (nil? d)
-        meetings 
-        (filter #(or (within? % d) 
-                     (equal? (ct/date-time (ct/year (:start %))
-                                            (ct/month (:start %))
-                                            (ct/day (:start %))) d)) meetings))))
+        meetings
+        (->>
+          meetings
+          (map #(update-in % [:start] local-date-time))
+          (map #(update-in % [:end] local-date-time))
+          (filter #(or (within? % d) 
+                       (equal? (ct/date-time (ct/year (:start %))
+                                              (ct/month (:start %))
+                                              (ct/day (:start %))) d)))))))
 
 (re-frame/reg-sub
   ::error
