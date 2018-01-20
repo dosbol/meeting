@@ -1,7 +1,7 @@
 (ns meeting.events
   (:require [re-frame.core :as re-frame]
             [meeting.db :as db]
-            [cljs-time.core    :refer [now before? date? overlaps?]]
+            [cljs-time.core    :refer [now before? date? overlaps? minus hours]]
             [clojure.string :as string]
             [cljs-time.format  :refer [formatter unparse parse]]))
 
@@ -21,84 +21,97 @@
 (defn filter-queue [f q] (apply conj #queue[] (vec (filter f q))))
 (defn not-in? [coll elem] (not (contains? (set coll) elem)))
 (defn not-in-validation-interceptors? [elem] (not-in? validation-interceptors elem))
+
+
+;;validation interceptors helpers
+
+(defn blank-interceptor-before [key]
+  (fn [context]
+    (let [{[_ {field key}] :event} (:coeffects context)]
+      (if (string/blank? field)
+          (update-in (assoc-in context [:coeffects :error] (str (name key) " required"))     ;; assoc error message
+                    [:queue] #(filter-queue not-in-validation-interceptors? %))              ;; skip other validation-interceptors
+          context))))
+
+(defn inv-format-interceptor-before [key]
+  (fn [context]
+    (let [{[_ {field key}] :event} (:coeffects context)]
+      (if (not (re-matches #"\d{2}\.\d{2}\.\d{4}\s+\d{2}:\d{2}\s+(AM|PM)" field))
+          (update-in (assoc-in context [:coeffects :error] (str (name key) " date-time format is invalid(should be dd.MM.yyyy hh:mm AM)"))
+                    [:queue] #(filter-queue not-in-validation-interceptors? %))
+          context))))
+
+(defn inv-date-interceptor-before [key]
+  (fn [context]
+    (let [{[_ {field key}] :event} (:coeffects context)]    
+      (try (assoc-in context [:coeffects :event 1 key] (parse datetime-formatter field))  ;futher interceptors and event-handler works with datetime(not string)
+                    (catch :default e
+                      (update-in (assoc-in context [:coeffects :error] (str (name key) " date-time is not valid"))
+                                  [:queue] #(filter-queue not-in-validation-interceptors? %)))))))
+
+(defn time-to-utc! [key]
+  (fn [context]
+    (let [{[_ {field key timezone :timezone}] :event} (:coeffects context)]    
+      (assoc-in context [:coeffects :event 1 key] (minus field (hours (:diff timezone)))))))
+
 ;;validation interceptors
 
 (def blank-title?
   (re-frame.core/->interceptor
     :id      :blank-title?
-    :before  (fn [context]
-               (let [{db :db [event {title :title}] :event} (:coeffects context)]
-                 (if (string/blank? title)
-                     (update-in (assoc-in context [:coeffects :error] "Title required")       ;; assoc error message
-                                [:queue] #(filter-queue not-in-validation-interceptors? %))   ;; skip other validation-interceptors          
-                     context)))))
+    :before  (blank-interceptor-before :title)))
+
+(def blank-timezone?
+  (re-frame.core/->interceptor
+    :id      :blank-timezone?
+    :before  (blank-interceptor-before :timezone)))
 
 (def blank-start?
   (re-frame.core/->interceptor
     :id      :blank-start?
-    :before  (fn [context]
-               (let [{db :db [event {start :start}] :event error :error} (:coeffects context)]
-                 (if (string/blank? start)
-                     (update-in (assoc-in context [:coeffects :error] "Start date-time required")
-                                [:queue] #(filter-queue not-in-validation-interceptors? %))
-                     context)))))
+    :before  (blank-interceptor-before :start)))
 
 (def blank-end?
   (re-frame.core/->interceptor
     :id      :blank-end?
-    :before  (fn [context]
-               (let [{db :db [event {end :end}] :event error :error} (:coeffects context)]
-                 (if (string/blank? end)
-                     (update-in (assoc-in context [:coeffects :error] "End date-time required")
-                                [:queue] #(filter-queue not-in-validation-interceptors? %))
-                     context)))))
+    :before  (blank-interceptor-before :end)))
 
 (def invalid-format-start?
   (re-frame.core/->interceptor
     :id      :invalid-format-start?
-    :before  (fn [context]
-               (let [{db :db [event {start :start}] :event error :error} (:coeffects context)]
-                 (if (not (re-matches #"\d{2}\.\d{2}\.\d{4}\s+\d{2}:\d{2}\s+(AM|PM)" start))
-                     (update-in (assoc-in context [:coeffects :error] "Start date-time format is invalid(should be dd.MM.yyyy hh:mm AM)")
-                                [:queue] #(filter-queue not-in-validation-interceptors? %))
-                     context)))))
+    :before  (inv-format-interceptor-before :start)))
 
 (def invalid-format-end?
   (re-frame.core/->interceptor
     :id      :invalid-format-end?
-    :before  (fn [context]
-               (let [{db :db [event {end :end}] :event error :error} (:coeffects context)]
-                 (if (not (re-matches #"\d{2}\.\d{2}\.\d{4}\s+\d{2}:\d{2}\s+(AM|PM)" end))
-                     (update-in (assoc-in context [:coeffects :error] "End date-time format is invalid(should be dd.MM.yyyy hh:mm AM)")
-                                [:queue] #(filter-queue not-in-validation-interceptors? %))
-                     context)))))
+    :before  (inv-format-interceptor-before :end)))
 
 (def invalid-date-start?
   (re-frame.core/->interceptor
     :id      :invalid-date-start?
-    :before  (fn [context]
-               (let [{db :db [event {start :start}] :event error :error} (:coeffects context)]
-                 (try (do (parse datetime-formatter start) context)
-                    (catch :default e 
-                      (update-in (assoc-in context [:coeffects :error] "Start date-time is not valid")
-                                  [:queue] #(filter-queue not-in-validation-interceptors? %))))))))
+    :before  (inv-date-interceptor-before :start)))
 
 (def invalid-date-end?
   (re-frame.core/->interceptor
     :id      :invalid-date-end?
-    :before  (fn [context]
-               (let [{db :db [event {end :end}] :event error :error} (:coeffects context)]
-                 (try (do (parse datetime-formatter end) context)
-                    (catch :default e 
-                      (update-in (assoc-in context [:coeffects :error] "End date-time is not valid")
-                                  [:queue] #(filter-queue not-in-validation-interceptors? %))))))))
+    :before  (inv-date-interceptor-before :end)))
+
+(def time-to-utc-start!
+  (re-frame.core/->interceptor
+    :id      :time-to-utc-start!
+    :before  (time-to-utc! :start)))
+
+(def time-to-utc-end!
+  (re-frame.core/->interceptor
+    :id      :time-to-utc-start!
+    :before  (time-to-utc! :end)))
 
 (def past-time-start?
   (re-frame.core/->interceptor
     :id      :past-time-start?
     :before  (fn [context]
                (let [{db :db [event {start :start}] :event error :error} (:coeffects context)]
-                 (if (before? (parse datetime-formatter start) (now))
+                 (if (before? start (now))
                      (update-in (assoc-in context [:coeffects :error] "Start date-time could not be in past")
                                 [:queue] #(filter-queue not-in-validation-interceptors? %))
                      context)))))
@@ -108,7 +121,7 @@
     :id      :end-before-start?
     :before  (fn [context]
                (let [{db :db [event {start :start end :end}] :event error :error} (:coeffects context)]
-                 (if (before? (parse datetime-formatter end) (parse datetime-formatter start))
+                 (if (before? end start)
                       (update-in (assoc-in context [:coeffects :error] "End date-time could not be before start date-time")
                                   [:queue] #(filter-queue not-in-validation-interceptors? %))
                      context)))))
@@ -119,8 +132,8 @@
     :before  (fn [context]
                (let [{db :db [event {start :start end :end id :id}] :event error :error} (:coeffects context)]
                  (if (seq (filter #(and (overlaps? (:start %) (:end %)
-                                                     (parse datetime-formatter start)
-                                                     (parse datetime-formatter end))
+                                                   start
+                                                   end)
                                         (not= id (:id %)))
                               (vals (:meetings db))))
                     (assoc-in context [:coeffects :error] "Meeting overlaps with existing meetings")
@@ -128,13 +141,16 @@
 
 (def validation-interceptors 
   [ blank-title?
+    blank-timezone?
     blank-start?
     invalid-format-start?
     invalid-date-start?
+    time-to-utc-start!
     past-time-start?
     blank-end?
     invalid-format-end?
     invalid-date-end?
+    time-to-utc-end!
     end-before-start?
     meeting-overlaps?])
 
@@ -166,17 +182,15 @@
 
 (re-frame/reg-event-fx
  ::create-meeting!
-
  [validation-interceptors
   (re-frame/inject-cofx :meeting-id)]
-
  (fn [cofx [_ new-meeting]]
     (if-not (:error cofx)      
             {:db (update-in (dissoc (:db cofx) :error) [:meetings] conj 
               {(:meeting-id cofx) 
                 (merge (conj new-meeting {:id (:meeting-id cofx)}) 
-                  {:start (parse datetime-formatter (:start new-meeting))
-                   :end (parse datetime-formatter (:end new-meeting))})})
+                  {:start (:start new-meeting)
+                   :end (:end new-meeting)})})
              :change-loc ""}
             {:db (assoc (:db cofx) :error (:error cofx))})))
 
@@ -192,15 +206,13 @@
 
 (re-frame/reg-event-fx
  ::update-meeting!
-
  [validation-interceptors]
-
  (fn [cofx [_ meeting]]
     (if-not (:error cofx)      
             {:db (update-in (dissoc (:db cofx) :error) [:meetings (:active-meeting-id (:db cofx))] 
                   merge 
-                  (merge meeting {:start (parse datetime-formatter (:start meeting))
-                                  :end (parse datetime-formatter (:end meeting))}))
+                  (merge meeting {:start (:start meeting)
+                                  :end (:end meeting)}))
              :change-loc ""}
             {:db (assoc (:db cofx) :error (:error cofx))})))
 

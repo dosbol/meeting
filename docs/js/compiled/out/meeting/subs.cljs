@@ -1,6 +1,6 @@
 (ns meeting.subs
   (:require [re-frame.core :as re-frame]
-            [cljs-time.core    :refer [within? after? before? equal?] :as ct]))
+            [cljs-time.core    :refer [within? after? before? equal? plus hours] :as ct]))
 
 (re-frame/reg-sub
  ::active-panel
@@ -33,7 +33,12 @@
     [(re-frame/subscribe [::active-meeting-id])
     (re-frame/subscribe [::meetings-raw])])
   (fn [[id meetings]]
-    (get meetings id)))
+    (let [m (get meetings id)]
+      (if id 
+        (assoc-in 
+          (assoc-in m [:start] (plus (:start m) (hours (:diff (:timezone m)))))
+          [:end]
+          (plus (:end m) (hours (:diff (:timezone m)))))))))
 
 (re-frame/reg-sub
   ::showing
