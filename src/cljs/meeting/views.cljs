@@ -58,7 +58,7 @@
              ^{:key (:id meeting)} [meeting-row meeting])]])))
 
 (defn home-panel []
-    (let [filter-date (reagent/atom nil)]
+    (let [filter-date (reagent/atom @(re-frame/subscribe [::subs/filter-date]))]
     [:div (str "Hello. This is the Home Page.")
      [:div [:a {:href "#/meetings/new" :on-click #(reset! new-meeting skeleton)} "create meeting"]]
      
