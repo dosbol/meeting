@@ -50,7 +50,7 @@
   []
   (let [meetings @(re-frame/subscribe [::subs/visible-meetings])]
     (when (seq meetings)
-        [:table
+        [:table.meeting
           [:thead
             [:tr [:th "ID"] [:th "Title"] [:th "Start(local time)"] [:th "End(local time)"] [:th "Status"] [:th "Actions"]]]
           [:tbody
@@ -81,7 +81,7 @@
   [:div {:style {:font-weight :bold}} "Template for copy-paste: " (unparse datetime-formatter (plus (now) (days 1)))]
   [:div {:style {:color :red}} @(re-frame/subscribe [::subs/error])]
   [:form
-    [:table
+    [:table.meeting
       [:tbody
         [:tr
           [:td "Title"]
@@ -127,7 +127,7 @@
     [:div "This is the view Page."
     [:div [:a {:href "#/"} "go to Home Page"]]
     (let [meeting @(re-frame/subscribe [::subs/active-meeting])]
-        [:table
+        [:table.meeting
           [:thead
             [:tr 
               [:th "ID"]
@@ -150,7 +150,7 @@
     [:div [:a {:href "#/"} "go to Home Page"]]
     [:div {:style {:color :red}} @(re-frame/subscribe [::subs/error])]
     [:form
-     [:table
+     [:table.meeting
       [:tbody
         [:tr
           [:td "Title"]

@@ -1,4 +1,4 @@
-table, th, td{
+table.meeting th, table.meeting td{
     border: 1px solid #2a2b2b;
     padding: 4px;
 }
