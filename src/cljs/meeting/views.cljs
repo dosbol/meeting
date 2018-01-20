@@ -77,6 +77,7 @@
 (defn create-panel []
   [:div "This is the Meeting Page."
   [:div [:a {:href "#/"} "go to Home Page"]]
+  [:div {:style {:font-weight :bold}} "Template for copy-paste: " (unparse datetime-formatter (plus (now) (days 1)))]
   [:div {:style {:color :red}} @(re-frame/subscribe [::subs/error])]
   [:form
     [input-text
