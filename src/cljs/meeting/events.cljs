@@ -22,6 +22,11 @@
 (defn not-in? [coll elem] (not (contains? (set coll) elem)))
 (defn not-in-validation-interceptors? [elem] (not-in? validation-interceptors elem))
 
+(defn assoc-error-fiter-queue 
+  [context error-string]
+    (-> context
+        (assoc-in [:coeffects :error] error-string)                                ;; assoc error message
+        (update-in [:queue] #(filter-queue not-in-validation-interceptors? %))))   ;; skip other validation-interceptors)
 
 ;;validation interceptors helpers
 
@@ -29,25 +34,22 @@
   (fn [context]
     (let [{[_ {field key}] :event} (:coeffects context)]
       (if (string/blank? field)
-          (update-in (assoc-in context [:coeffects :error] (str (name key) " required"))     ;; assoc error message
-                    [:queue] #(filter-queue not-in-validation-interceptors? %))              ;; skip other validation-interceptors
+          (assoc-error-fiter-queue context (str (name key) " required"))
           context))))
 
 (defn inv-format-interceptor-before [key]
   (fn [context]
     (let [{[_ {field key}] :event} (:coeffects context)]
       (if (not (re-matches #"\d{2}\.\d{2}\.\d{4}\s+\d{2}:\d{2}\s+(AM|PM)" field))
-          (update-in (assoc-in context [:coeffects :error] (str (name key) " date-time format is invalid(should be dd.MM.yyyy hh:mm AM)"))
-                    [:queue] #(filter-queue not-in-validation-interceptors? %))
+          (assoc-error-fiter-queue context (str (name key) " date-time format is invalid(should be dd.MM.yyyy hh:mm AM)"))
           context))))
 
 (defn inv-date-interceptor-before [key]
   (fn [context]
     (let [{[_ {field key}] :event} (:coeffects context)]    
-      (try (assoc-in context [:coeffects :event 1 key] (parse datetime-formatter field))  ;futher interceptors and event-handler works with datetime(not string)
-                    (catch :default e
-                      (update-in (assoc-in context [:coeffects :error] (str (name key) " date-time is not valid"))
-                                  [:queue] #(filter-queue not-in-validation-interceptors? %)))))))
+      (try (assoc-in context [:coeffects :event 1 key] (parse datetime-formatter field))  ;futher interceptors and event-handler will work with datetime(not string)
+           (catch :default e
+              (assoc-error-fiter-queue context (str (name key) " date-time is not valid")))))))
 
 (defn time-to-utc! [key]
   (fn [context]
@@ -112,9 +114,8 @@
     :before  (fn [context]
                (let [{db :db [event {start :start}] :event error :error} (:coeffects context)]
                  (if (before? start (now))
-                     (update-in (assoc-in context [:coeffects :error] "Start date-time could not be in past")
-                                [:queue] #(filter-queue not-in-validation-interceptors? %))
-                     context)))))
+                    (assoc-error-fiter-queue context "Start date-time could not be in past")
+                    context)))))
 
 (def end-before-start?
   (re-frame.core/->interceptor
@@ -122,21 +123,21 @@
     :before  (fn [context]
                (let [{db :db [event {start :start end :end}] :event error :error} (:coeffects context)]
                  (if (before? end start)
-                      (update-in (assoc-in context [:coeffects :error] "End date-time could not be before start date-time")
-                                  [:queue] #(filter-queue not-in-validation-interceptors? %))
-                     context)))))
+                    (assoc-error-fiter-queue context "End date-time could not be before start date-time")
+                    context)))))
 
 (def meeting-overlaps?
   (re-frame.core/->interceptor
     :id      :meeting-overlaps?
     :before  (fn [context]
                (let [{db :db [event {start :start end :end id :id}] :event error :error} (:coeffects context)]
-                 (if (seq (filter #(and (overlaps? (:start %) (:end %)
-                                                   start
-                                                   end)
+                 (if (seq (filter #(and (overlaps?  (:start %)
+                                                    (:end %)
+                                                    start
+                                                    end)
                                         (not= id (:id %)))
                               (vals (:meetings db))))
-                    (assoc-in context [:coeffects :error] "Meeting overlaps with existing meetings")
+                    (assoc-error-fiter-queue context "Meeting overlaps with existing meetings")
                      context)))))
 
 (def validation-interceptors 
@@ -186,12 +187,10 @@
   (re-frame/inject-cofx :meeting-id)]
  (fn [cofx [_ new-meeting]]
     (if-not (:error cofx)      
-            {:db (update-in (dissoc (:db cofx) :error) [:meetings] conj 
-              {(:meeting-id cofx) 
-                (merge (conj new-meeting {:id (:meeting-id cofx)}) 
-                  {:start (:start new-meeting)
-                   :end (:end new-meeting)})})
-             :change-loc ""}
+            {:db (->  (:db cofx)
+                      (dissoc :error)
+                      (update-in [:meetings] conj {(:meeting-id cofx) (conj new-meeting {:id (:meeting-id cofx)})}))
+            :change-loc ""}
             {:db (assoc (:db cofx) :error (:error cofx))})))
 
 (re-frame/reg-event-fx 
@@ -209,10 +208,9 @@
  [validation-interceptors]
  (fn [cofx [_ meeting]]
     (if-not (:error cofx)      
-            {:db (update-in (dissoc (:db cofx) :error) [:meetings (:active-meeting-id (:db cofx))] 
-                  merge 
-                  (merge meeting {:start (:start meeting)
-                                  :end (:end meeting)}))
+            {:db  (-> (:db cofx)
+                      (dissoc :error)
+                      (assoc-in [:meetings (:active-meeting-id (:db cofx))] meeting))
              :change-loc ""}
             {:db (assoc (:db cofx) :error (:error cofx))})))
 
