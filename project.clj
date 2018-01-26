@@ -14,7 +14,7 @@
 
   :source-paths ["src/clj"]
 
-  :clean-targets ^{:protect false} ["docs/js/compiled" "target"]
+  :clean-targets ^{:protect false} ["docs/js/compiled" "target" "test/js"]
 
   :figwheel {:css-dirs ["docs/css"]}
 
@@ -48,7 +48,12 @@
                     :closure-defines {goog.DEBUG false}
                     :pretty-print    false}}
 
-
+    {:id           "test"
+    :source-paths ["src/cljs" "test/cljs"]
+    :compiler     {:main           meeting.runner
+                    :output-to     "docs/js/compiled/test.js"
+                    :output-dir    "docs/js/compiled/test/out"
+                    :optimizations :none}}
     ]}
   :jvm-opts ["--add-modules" "java.xml.bind"]
 

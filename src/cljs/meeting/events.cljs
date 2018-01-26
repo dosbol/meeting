@@ -18,9 +18,17 @@
 ;;helper function for modifying :queue in :context
 (declare validation-interceptors)
 
-(defn filter-queue [f q] (apply conj #queue[] (vec (filter f q))))
-(defn not-in? [coll elem] (not (contains? (set coll) elem)))
-(defn not-in-validation-interceptors? [elem] (not-in? validation-interceptors elem))
+(defn filter-queue 
+  [f q] 
+  (apply conj #queue[] (vec (filter f q))))
+
+(defn not-in? 
+  [coll elem] 
+  (not (contains? (set coll) elem)))
+
+(defn not-in-validation-interceptors? 
+  [elem] 
+  (not-in? validation-interceptors elem))
 
 (defn assoc-error-fiter-queue 
   [context error-string]
@@ -30,28 +38,32 @@
 
 ;;validation interceptors helpers
 
-(defn blank-interceptor-before [key]
+(defn blank-interceptor-before 
+  [key]
   (fn [context]
     (let [{[_ {field key}] :event} (:coeffects context)]
       (if (string/blank? field)
           (assoc-error-fiter-queue context (str (name key) " required"))
           context))))
 
-(defn inv-format-interceptor-before [key]
+(defn inv-format-interceptor-before 
+  [key]
   (fn [context]
     (let [{[_ {field key}] :event} (:coeffects context)]
       (if (not (re-matches #"\d{2}\.\d{2}\.\d{4}\s+\d{2}:\d{2}\s+(AM|PM)" field))
           (assoc-error-fiter-queue context (str (name key) " date-time format is invalid(should be dd.MM.yyyy hh:mm AM)"))
           context))))
 
-(defn inv-date-interceptor-before [key]
+(defn inv-date-interceptor-before 
+  [key]
   (fn [context]
     (let [{[_ {field key}] :event} (:coeffects context)]    
       (try (assoc-in context [:coeffects :event 1 key] (parse datetime-formatter field))  ;futher interceptors and event-handler will work with datetime(not string)
            (catch :default e
               (assoc-error-fiter-queue context (str (name key) " date-time is not valid")))))))
 
-(defn time-to-utc! [key]
+(defn time-to-utc! 
+  [key]
   (fn [context]
     (let [{[_ {field key timezone :timezone}] :event} (:coeffects context)]    
       (assoc-in context [:coeffects :event 1 key] (minus field (hours (:diff timezone)))))))
