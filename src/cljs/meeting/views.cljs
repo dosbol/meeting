@@ -13,8 +13,7 @@
                 {:id :khabarovsk :label "Khabarovsk" :diff 10}
                 {:id :greenwich :label "Greenwich" :diff 0}])
 
-(defonce new-meeting (reagent/atom skeleton))
-(defonce active-meeting (reagent/atom skeleton))
+ (defonce active-meeting (reagent/atom skeleton))
 
 (def datetime-formatter (formatter "dd.MM.yyyy hh:mm A"))
 
@@ -62,7 +61,7 @@
   (let [filter-date (reagent/atom @(re-frame/subscribe [::subs/filter-date]))]
     (fn [] 
       [:div "Hello. This is the Home Page."
-        [:div [:a {:href "#/meetings/new" :on-click #(reset! new-meeting skeleton)} "create meeting"]]
+        [:div [:a {:href "#/meetings/new"} "create meeting"]]
         
           [datepicker-dropdown
             :model         filter-date
@@ -79,50 +78,52 @@
 
 (defn create-panel 
   []
-  [:div "This is the Meeting Page."
-    [:div [:a {:href "#/"} "go to Home Page"]]
-    [:div {:style {:font-weight :bold}} "Template for copy-paste: " (unparse datetime-formatter (plus (now) (days 1)))]
-    [:div {:style {:color :red}} @(re-frame/subscribe [::subs/error])]
-    [:form
-      [:table.meeting
-        [:tbody
-          [:tr
-            [:td "Title"]
-            [:td
-              [input-text
-                :model        ""
-                :placeholder  "title"
-                :on-change    #(swap! new-meeting assoc :title %)]]]
-          [:tr
-            [:td "Timezone"]
-            [:td    
-              [single-dropdown
-                :choices     timezones
-                :model       nil
-                :on-change   (fn [id] (swap! new-meeting assoc :timezone (some #(if (= id (:id %)) %) timezones)))
-                :placeholder "choose timezone"]]]
-          [:tr
-            [:td "Start datetime"]
-            [:td    
-              [input-text
-                :model        ""
-                :placeholder  "dd.MM.yyyy hh:mm A"
-                :change-on-blur? true
-                :on-change    #(swap! new-meeting assoc :start %)]]]
-          [:tr
-            [:td "End datetime"]
-            [:td
-              [input-text
-                :model        ""
-                :placeholder  "dd.MM.yyyy hh:mm A"
-                :change-on-blur? true
-                :on-change    #(swap! new-meeting assoc :end %)]]]
-          [:tr
-            [:td]
-            [:td
-              [:button {:type :button
-                        :on-click #(re-frame/dispatch [::events/create-meeting! @new-meeting])}
-                      "create meeting"]]]]]]])
+  (let [new-meeting (reagent/atom skeleton)]
+    (fn [] 
+      [:div "This is the Meeting Page."
+        [:div [:a {:href "#/"} "go to Home Page"]]
+        [:div {:style {:font-weight :bold}} "Template for copy-paste: " (unparse datetime-formatter (plus (now) (days 1)))]
+        [:div {:style {:color :red}} @(re-frame/subscribe [::subs/error])]
+        [:form
+          [:table.meeting
+            [:tbody
+              [:tr
+                [:td "Title"]
+                [:td
+                  [input-text
+                    :model        ""
+                    :placeholder  "title"
+                    :on-change    #(swap! new-meeting assoc :title %)]]]
+              [:tr
+                [:td "Timezone"]
+                [:td    
+                  [single-dropdown
+                    :choices     timezones
+                    :model       nil
+                    :on-change   (fn [id] (swap! new-meeting assoc :timezone (some #(if (= id (:id %)) %) timezones)))
+                    :placeholder "choose timezone"]]]
+              [:tr
+                [:td "Start datetime"]
+                [:td    
+                  [input-text
+                    :model        ""
+                    :placeholder  "dd.MM.yyyy hh:mm A"
+                    :change-on-blur? true
+                    :on-change    #(swap! new-meeting assoc :start %)]]]
+              [:tr
+                [:td "End datetime"]
+                [:td
+                  [input-text
+                    :model        ""
+                    :placeholder  "dd.MM.yyyy hh:mm A"
+                    :change-on-blur? true
+                    :on-change    #(swap! new-meeting assoc :end %)]]]
+              [:tr
+                [:td]
+                [:td
+                  [:button {:type :button
+                            :on-click #(re-frame/dispatch [::events/create-meeting! @new-meeting])}
+                          "create meeting"]]]]]]])))
 
 ;; view panel
 
