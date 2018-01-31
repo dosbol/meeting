@@ -20,10 +20,10 @@ return new cljs.core.Keyword(null,"active-meeting-id","active-meeting-id",471672
 }));
 re_frame.core.reg_sub.call(null,new cljs.core.Keyword("meeting.subs","active-meeting","meeting.subs/active-meeting",-1433674092),(function (_){
 return new cljs.core.PersistentVector(null, 2, 5, cljs.core.PersistentVector.EMPTY_NODE, [re_frame.core.subscribe.call(null,new cljs.core.PersistentVector(null, 1, 5, cljs.core.PersistentVector.EMPTY_NODE, [new cljs.core.Keyword("meeting.subs","active-meeting-id","meeting.subs/active-meeting-id",1908472538)], null)),re_frame.core.subscribe.call(null,new cljs.core.PersistentVector(null, 1, 5, cljs.core.PersistentVector.EMPTY_NODE, [new cljs.core.Keyword("meeting.subs","meetings-raw","meeting.subs/meetings-raw",1443678768)], null))], null);
-}),(function (p__80075){
-var vec__80076 = p__80075;
-var id = cljs.core.nth.call(null,vec__80076,(0),null);
-var meetings = cljs.core.nth.call(null,vec__80076,(1),null);
+}),(function (p__35734){
+var vec__35735 = p__35734;
+var id = cljs.core.nth.call(null,vec__35735,(0),null);
+var meetings = cljs.core.nth.call(null,vec__35735,(1),null);
 var m = cljs.core.get.call(null,meetings,id);
 if(cljs.core.truth_(id)){
 return cljs.core.assoc_in.call(null,cljs.core.assoc_in.call(null,m,new cljs.core.PersistentVector(null, 1, 5, cljs.core.PersistentVector.EMPTY_NODE, [new cljs.core.Keyword(null,"start","start",-355208981)], null),cljs_time.core.plus.call(null,new cljs.core.Keyword(null,"start","start",-355208981).cljs$core$IFn$_invoke$arity$1(m),cljs_time.core.hours.call(null,new cljs.core.Keyword(null,"diff","diff",2135942783).cljs$core$IFn$_invoke$arity$1(new cljs.core.Keyword(null,"timezone","timezone",1831928099).cljs$core$IFn$_invoke$arity$1(m))))),new cljs.core.PersistentVector(null, 1, 5, cljs.core.PersistentVector.EMPTY_NODE, [new cljs.core.Keyword(null,"end","end",-268185958)], null),cljs_time.core.plus.call(null,new cljs.core.Keyword(null,"end","end",-268185958).cljs$core$IFn$_invoke$arity$1(m),cljs_time.core.hours.call(null,new cljs.core.Keyword(null,"diff","diff",2135942783).cljs$core$IFn$_invoke$arity$1(new cljs.core.Keyword(null,"timezone","timezone",1831928099).cljs$core$IFn$_invoke$arity$1(m)))));
@@ -39,30 +39,30 @@ return new cljs.core.Keyword(null,"filter-date","filter-date",-1447386173).cljs$
 }));
 re_frame.core.reg_sub.call(null,new cljs.core.Keyword("meeting.subs","visible-meetings","meeting.subs/visible-meetings",2146244548),(function (_){
 return new cljs.core.PersistentVector(null, 2, 5, cljs.core.PersistentVector.EMPTY_NODE, [re_frame.core.subscribe.call(null,new cljs.core.PersistentVector(null, 1, 5, cljs.core.PersistentVector.EMPTY_NODE, [new cljs.core.Keyword("meeting.subs","meetings","meeting.subs/meetings",686752292)], null)),re_frame.core.subscribe.call(null,new cljs.core.PersistentVector(null, 1, 5, cljs.core.PersistentVector.EMPTY_NODE, [new cljs.core.Keyword("meeting.subs","filter-date","meeting.subs/filter-date",1209432509)], null))], null);
-}),(function (p__80082){
-var vec__80083 = p__80082;
-var meetings = cljs.core.nth.call(null,vec__80083,(0),null);
-var d = cljs.core.nth.call(null,vec__80083,(1),null);
+}),(function (p__35741){
+var vec__35742 = p__35741;
+var meetings = cljs.core.nth.call(null,vec__35742,(0),null);
+var d = cljs.core.nth.call(null,vec__35742,(1),null);
 if((d == null)){
 return meetings;
 } else {
-return cljs.core.filter.call(null,((function (vec__80083,meetings,d){
-return (function (p1__80081_SHARP_){
-var or__27195__auto__ = cljs_time.core.within_QMARK_.call(null,p1__80081_SHARP_,d);
+return cljs.core.filter.call(null,((function (vec__35742,meetings,d){
+return (function (p1__35740_SHARP_){
+var or__27195__auto__ = cljs_time.core.within_QMARK_.call(null,p1__35740_SHARP_,d);
 if(cljs.core.truth_(or__27195__auto__)){
 return or__27195__auto__;
 } else {
-return cljs_time.core.equal_QMARK_.call(null,cljs_time.core.date_time.call(null,cljs_time.core.year.call(null,new cljs.core.Keyword(null,"start","start",-355208981).cljs$core$IFn$_invoke$arity$1(p1__80081_SHARP_)),cljs_time.core.month.call(null,new cljs.core.Keyword(null,"start","start",-355208981).cljs$core$IFn$_invoke$arity$1(p1__80081_SHARP_)),cljs_time.core.day.call(null,new cljs.core.Keyword(null,"start","start",-355208981).cljs$core$IFn$_invoke$arity$1(p1__80081_SHARP_))),d);
+return cljs_time.core.equal_QMARK_.call(null,cljs_time.core.date_time.call(null,cljs_time.core.year.call(null,new cljs.core.Keyword(null,"start","start",-355208981).cljs$core$IFn$_invoke$arity$1(p1__35740_SHARP_)),cljs_time.core.month.call(null,new cljs.core.Keyword(null,"start","start",-355208981).cljs$core$IFn$_invoke$arity$1(p1__35740_SHARP_)),cljs_time.core.day.call(null,new cljs.core.Keyword(null,"start","start",-355208981).cljs$core$IFn$_invoke$arity$1(p1__35740_SHARP_))),d);
 }
-});})(vec__80083,meetings,d))
-,cljs.core.map.call(null,((function (vec__80083,meetings,d){
-return (function (p1__80080_SHARP_){
-return cljs.core.update_in.call(null,p1__80080_SHARP_,new cljs.core.PersistentVector(null, 1, 5, cljs.core.PersistentVector.EMPTY_NODE, [new cljs.core.Keyword(null,"end","end",-268185958)], null),cljs_time.core.local_date_time);
-});})(vec__80083,meetings,d))
-,cljs.core.map.call(null,((function (vec__80083,meetings,d){
-return (function (p1__80079_SHARP_){
-return cljs.core.update_in.call(null,p1__80079_SHARP_,new cljs.core.PersistentVector(null, 1, 5, cljs.core.PersistentVector.EMPTY_NODE, [new cljs.core.Keyword(null,"start","start",-355208981)], null),cljs_time.core.local_date_time);
-});})(vec__80083,meetings,d))
+});})(vec__35742,meetings,d))
+,cljs.core.map.call(null,((function (vec__35742,meetings,d){
+return (function (p1__35739_SHARP_){
+return cljs.core.update_in.call(null,p1__35739_SHARP_,new cljs.core.PersistentVector(null, 1, 5, cljs.core.PersistentVector.EMPTY_NODE, [new cljs.core.Keyword(null,"end","end",-268185958)], null),cljs_time.core.local_date_time);
+});})(vec__35742,meetings,d))
+,cljs.core.map.call(null,((function (vec__35742,meetings,d){
+return (function (p1__35738_SHARP_){
+return cljs.core.update_in.call(null,p1__35738_SHARP_,new cljs.core.PersistentVector(null, 1, 5, cljs.core.PersistentVector.EMPTY_NODE, [new cljs.core.Keyword(null,"start","start",-355208981)], null),cljs_time.core.local_date_time);
+});})(vec__35742,meetings,d))
 ,meetings)));
 }
 }));
@@ -70,4 +70,4 @@ re_frame.core.reg_sub.call(null,new cljs.core.Keyword("meeting.subs","error","me
 return new cljs.core.Keyword(null,"error","error",-978969032).cljs$core$IFn$_invoke$arity$1(db);
 }));
 
-//# sourceMappingURL=subs.js.map?rel=1516454450505
+//# sourceMappingURL=subs.js.map?rel=1517373774343

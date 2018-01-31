@@ -35,10 +35,9 @@
   (fn [[id meetings]]
     (let [m (get meetings id)]
       (if id 
-        (assoc-in 
-          (assoc-in m [:start] (plus (:start m) (hours (:diff (:timezone m)))))
-          [:end]
-          (plus (:end m) (hours (:diff (:timezone m)))))))))
+        (-> m
+            (assoc-in [:start] (plus (:start m) (hours (:diff (:timezone m)))))
+            (assoc-in [:end] (plus (:end m) (hours (:diff (:timezone m))))))))))
 
 (re-frame/reg-sub
   ::showing
