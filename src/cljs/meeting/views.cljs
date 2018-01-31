@@ -8,13 +8,9 @@
             [cljs-time.coerce  :refer [to-local-date]]
             [cljs-time.format  :refer [formatter unparse parse]]))
 
-(def skeleton {:title "" :status :planned})
 (def timezones [{:id :moscow :label "Moscow" :diff 3}
                 {:id :khabarovsk :label "Khabarovsk" :diff 10}
-                {:id :greenwich :label "Greenwich" :diff 0}])
-
- (defonce active-meeting (reagent/atom skeleton))
-
+                {:id :greenwich :label "Greenwich" :diff 0}])                
 (def datetime-formatter (formatter "dd.MM.yyyy hh:mm A"))
 
 ;; home page
@@ -35,12 +31,7 @@
         (if (= status :planned)
           [:span 
             [:a
-              {:href (str "#/meetings/" id "/edit") 
-               :on-click #(reset! active-meeting (merge meeting {:start (unparse datetime-formatter 
-                                                                          (plus (:start meeting) (hours (:diff (:timezone meeting)))))
-                                                                 :end (unparse datetime-formatter 
-                                                                          (plus (:end meeting) (hours (:diff (:timezone meeting)))))}))}
-              "edit"]
+              {:href (str "#/meetings/" id "/edit")}"edit"]
             " | "])
         [:a
           {:on-click #(re-frame/dispatch [::events/delete-meeting! id]) :href "#"} "delete"]]]))
@@ -78,7 +69,7 @@
 
 (defn create-panel 
   []
-  (let [new-meeting (reagent/atom skeleton)]
+  (let [new-meeting (reagent/atom {:status :planned})]
     (fn [] 
       [:div "This is the Meeting Page."
         [:div [:a {:href "#/"} "go to Home Page"]]
@@ -152,49 +143,53 @@
 
 (defn edit-panel 
   []
-  [:div "This is the edit Page."
-    [:div [:a {:href "#/"} "go to Home Page"]]
-    [:div {:style {:color :red}} @(re-frame/subscribe [::subs/error])]
-    [:form
-    [:table.meeting
-      [:tbody
-        [:tr
-          [:td "Title"]
-          [:td  
-            [input-text
-              :model        (:title @active-meeting)
-              :placeholder  "title"
-              :on-change    #(swap! active-meeting assoc :title %)]]]
-        [:tr
-          [:td "Timezone"]
-          [:td  
-            [single-dropdown
-              :choices     timezones
-              :model       (:id (:timezone @active-meeting))
-              :on-change   (fn [id] (swap! active-meeting assoc :timezone (some #(if (= id (:id %)) %) timezones)))
-              :placeholder "choose timezone"]]]
-        [:tr
-          [:td "Start datetime"]
-          [:td  
-            [input-text
-              :model        (:start @active-meeting)
-              :placeholder  "dd.MM.yyyy hh:mm A"
-              :change-on-blur? true
-              :on-change    #(swap! active-meeting assoc :start %)]]]
-        [:tr
-          [:td "End datetime"]
-          [:td  
-            [input-text
-              :model        (:end @active-meeting)
-              :placeholder  "dd.MM.yyyy hh:mm A"
-              :change-on-blur? true
-              :on-change    #(swap! active-meeting assoc :end %)]]]
-        [:tr
-          [:td]
-          [:td  
-            [:button {:type :button
-                      :on-click #(re-frame/dispatch [::events/update-meeting! @active-meeting])}
-                  "save"]]]]]]])
+  (let [active-meeting @(re-frame/subscribe [::subs/active-meeting])
+        meeting (reagent/atom (merge active-meeting {:start (unparse datetime-formatter (:start active-meeting))
+                                                     :end (unparse datetime-formatter (:end active-meeting))}))]
+    (fn [] 
+      [:div "This is the edit Page."
+        [:div [:a {:href "#/"} "go to Home Page"]]
+        [:div {:style {:color :red}} @(re-frame/subscribe [::subs/error])]
+        [:form
+        [:table.meeting
+          [:tbody
+            [:tr
+              [:td "Title"]
+              [:td  
+                [input-text
+                  :model        (:title @meeting)
+                  :placeholder  "title"
+                  :on-change    #(swap! meeting assoc :title %)]]]
+            [:tr
+              [:td "Timezone"]
+              [:td  
+                [single-dropdown
+                  :choices     timezones
+                  :model       (:id (:timezone @meeting))
+                  :on-change   (fn [id] (swap! meeting assoc :timezone (some #(if (= id (:id %)) %) timezones)))
+                  :placeholder "choose timezone"]]]
+            [:tr
+              [:td "Start datetime"]
+              [:td  
+                [input-text
+                  :model        (:start @meeting)
+                  :placeholder  "dd.MM.yyyy hh:mm A"
+                  :change-on-blur? true
+                  :on-change    #(swap! meeting assoc :start %)]]]
+            [:tr
+              [:td "End datetime"]
+              [:td  
+                [input-text
+                  :model        (:end @meeting)
+                  :placeholder  "dd.MM.yyyy hh:mm A"
+                  :change-on-blur? true
+                  :on-change    #(swap! meeting assoc :end %)]]]
+            [:tr
+              [:td]
+              [:td  
+                [:button {:type :button
+                          :on-click #(re-frame/dispatch [::events/update-meeting! @meeting])}
+                      "save"]]]]]]])))
 
 ;; main
 
